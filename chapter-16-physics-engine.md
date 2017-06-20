@@ -175,7 +175,7 @@ Havok引擎的授权则比较昂贵和严格，光环4、上古卷轴5等游戏�
 
 Havok、PhysX、Bullet，这三大物理引擎均是使用c++进行开发的，我们没法直接在Java程序中使用它们。好在 jME3 使用 JNI 技术实现了 Bullet 物理引擎的Java接口，因此我们可以通过 `jme3-bullet` 和 `jme3-bullet-native`库来使用Bullet 物理引擎。如果你对Havok或PhysX更感兴趣，就得自己实现它们的JNI接口了。我建议参考jME3的方式，这里是JNI接口的源代码：[jme3-bullet-native](https://github.com/jMonkeyEngine/jmonkeyengine/tree/master/jme3-bullet-native)。
 
-### 添加依赖库
+### 添加Bullet依赖库
 
 在jME3中使用Bullet引擎，我们需要添加两个依赖库，分别是：
 
@@ -195,7 +195,357 @@ Havok、PhysX、Bullet，这三大物理引擎均是使用c++进行开发的，�
     
 我们在程序中实际使用的是 `jme3-bullet` 库中的 Java 类，`jme3-bullet-native` 和 `jme3-bullet-native-android` 分别是不同平台上的 C++ 接口，用来调用 Bullet 物理引擎的功能。
 
-### 创建物理世界
+### 初始化Bullet
+
+BulletAppState 是jME3为Bullet物理引擎开发的核心接口，我们将会通过它来使用Bullet引擎。为了提升引擎工作的效率，BulletAppState内部有独立的工作线程，物理引擎运行时并不依赖jME3的主线程。
+
+使用的方法很简单，在
+ `simpleInitApp()` 方法中实例化一个 `BulletAppState` 对象，并把它添加到 `stateManager` 中。
+
+	package net.jmecn.physics3d;
+	
+	import com.jme3.app.SimpleApplication;
+	import com.jme3.bullet.BulletAppState;
+
+	/**
+	 * 使用Bullet物理引擎
+	 * 
+	 * @author yanmaoyuan
+	 */
+	public class TestBullet extends SimpleApplication {
+		
+		@Override
+		public void simpleInitApp() {		
+			// 初始化物理引擎
+			BulletAppState bulletAppState = new BulletAppState();
+			stateManager.attach(bulletAppState);
+
+		}
+	}
+
+物理引擎只负责计算，不管怎么显示。实际使用时，需要把场景图中的模型和物理引擎中物体关联起来。
+
+然而，有时我们还是希望能够更加直观地看到物理引擎中的各种物体，尤其是在开发调试的过程中。
+
+因此，jME3实现了一个BulletDebugAppState，用于可视化观察Bullet物理引擎中的各种物体。你不需要手动把它添加到stateManager中，只需要调用BulletAppState的`setDebugEnabled()`方法，它会自动把所有的活干好。
+
+	package net.jmecn.physics3d;
+	
+	import com.jme3.app.SimpleApplication;
+	import com.jme3.bullet.BulletAppState;
+
+	/**
+	 * 使用Bullet物理引擎
+	 * 
+	 * @author yanmaoyuan
+	 */
+	public class TestBullet extends SimpleApplication {
+		
+		@Override
+		public void simpleInitApp() {		
+			// 初始化物理引擎
+			BulletAppState bulletAppState = new BulletAppState();
+			stateManager.attach(bulletAppState);
+
+			// 开启调试模式，这样能够可视化观察物体的运动情况。
+			bulletAppState.setDebugEnabled(true);
+		}
+	}
+
+### 使用方法
+
+对于游戏中的任何一个物体，若想为其增加物理支持，差不多都要经历下面个过程：
+
+1. 为模型创建一个“碰撞形状（CollisionShape）”，它是物体的几何属性，用于碰撞检测。
+2. 创建一个PhysicsControl，设置好它的形状和质量。这个PhysicsControl就代表了物理引擎中的“物体”。
+3. 把这个PhysicsControl和Spatial绑定。
+4. 把这个PhysicsControl添加到Bullet的“物理空间（PhysicsSpace）”中。
+5. 把Spatial添加到场景图（rootNode）中。
+6. （可选）设置“物体”的物理属性，诸如速度、力、弹性等。
+7. （可选）实现PhysicsCollisionListener接口，监听物体的碰撞事件。
+
+下面我们来生成一个场景，做个小实验。场景中有一个固定不动的地板，作为其它物体的载体；一个以一定初速度飞出去的小球，从地板左侧向右侧运动；几块挡在小球行进路上的木板，它们将被小球逐一击倒。
+
+示意图如下：
+![一个简单的实验场景](/content/images/2017/06/ball_and_board.png)
+
+### 物理空间
+
+BulletAppState 中保存着对 Bullet “物理空间”的引用，即我们在前文介绍过的“世界”对象。一切需要进行物理模拟的物体，都要添加到这个空间中。
+
+通过下面的方法就可以拿到这个物体空间对象，并把“物体”、“关节”等对象添加到空间中。
+
+        // 获得Bullet的物理空间，它代表了运转物理规则的世界。
+        PhysicsSpace physicsSpace = bulletAppState.getPhysicsSpace();
+        // 将刚体添加到物理空间中
+        physicsSpace.add(rigidBody);
+
+这个空间是有边界的，边界的形状是一个盒子。在构造BulletAppState时，通过盒子对角线上最小和最大的两个顶点坐标，就可以设定物理空间的边界。例如：
+
+    // 初始化物理引擎，设置物理空间的边界。
+    BulletAppState bulletAppState = new BulletAppState(new Vector3f(-100f, -100f, -100f), new Vector3f(100f, 100f, 100f));
+
+通过 `setGravity` 可以设置物理空间中的全局重力加速度，默认值是 `new Vector3f(0,-9.81f,0);`。
+
+    physicsSpace.setGravity(new Vector3f(0,-9.81f,0));
+
+### 碰撞物体
+
+Bullet物理引擎支持很多种不同的物体，称为物理碰撞对象（PhysicsCollisionObject）。jME3只实现了3种最常用的物体：
+
+* 角色（PhysicsCharacter）
+* 刚体（PhysicsRigidBody）
+* 幽灵体（PhysicsGhostObject）
+
+角色代表的是游戏中的玩家、怪物、NPC这些东西。其运动模式一般是走、跑、蹲、跳。遇到较高的障碍物会被卡住，但是遇到较矮的台阶却可以通行。
+
+刚体代表游戏中的简单物体，诸如苹果、箱子、车辆、树、地形等等。一般只需要考虑碰撞、运动和力的相互作用，不会像玩家控制的角色那么智能。
+
+幽灵体比较特别。发生碰撞并不会改变物体原本的运动状态，而会穿透幽灵的身体。从作用上来说，幽灵体更偏向于纯粹的数学碰撞检测，很多物理规则对它是无效的。利用它的这种特性，很容易就可以实现NPC的警戒范围，甚至是视线检测。
+
+jME3并没有实现Bullet中的软体、液体、布料、粒子等碰撞体，一方面是为游戏性能考虑，另一方面是因为开源项目缺人。在大多数时刻，现有的3种物体已经足够满足游戏开发的需要了。如果你需要这些特性，恐怕得自己实现。
+
+在我们要做的实验中，地板、小球、木板都可以用刚体来表示。
+
+#### 物体控制器
+
+对应3种碰撞物体，jME3实现了3种不同的物体控制器（PhysicsControl）：
+
+* CharactorControl
+* RigidyBodyControl
+* GhostControl
+
+利用多个简单刚体组合成复杂物体，jME3另外设计实现了车辆（VehicleControl）、布娃娃（KinematicRagdollControl）等物体控件。
+
+有意思的是，jME3并不希望我们直接使用前面提到的碰撞物体，而是使用这些不同类型的 PhysicsControl。例如创建一个刚体小球，做法是这样的：
+
+		// 创建球形刚体，质量为0.65kg，半径为0.123m。
+		RigidBodyControl rigidBodyBall = new RigidBodyControl(0.65f);
+		rigidBodyBall.setCollisionShape(new SphereCollisionShape(0.123f));
+		rigidBodyBall.setPhysicsLocation(new Vector3f(-10, 1, 0));// 在物理世界中的坐标
+		rigidBodyBall.setLinearVelocity(new Vector3f(8, 5, 0));// 线速度
+		rigidBodyBall.setFriction(0.2f);// 摩擦系数
+		// 把小球添加到物理空间中
+		physicsSpace.add(rigidBodyBall);
+
+还记得我们在前面讨论过的一个问题吗：物理引擎要如何与游戏引擎集成？**如何实现不同线程的数据同步**？
+
+**刚体是在物理空间中运行的，而游戏模型是在场景图中展示的，分别处于两个不同的线程中**。我们需要把模型和刚体绑定起来，并且**实时同步**它们的位置、旋转等状态，这就需要一个PhysicsControl来进行同步。
+
+因此，如果你希望把这个小球刚体和某个模型绑定，就可以这样干：
+
+		Spatial spatial = ...;// 加载某个模型
+		spatial.addControl(rigidBodyBall);
+
+		rootNode.attachChild(spatial);// 把模型添加到场景图
+		physicsSpace.add(rigidBodyBall);// 把刚体添加到物理空间
+
+这样做之后，场景中的模型就会保持与刚体小球同步运动。
+
+### 几何属性
+
+所谓几何属性，指的是物体的外形，用于进行碰撞检测。jME3称其为Collidable，意为“可进行碰撞检测的东西”。Unity3D称其为碰撞器（Collider），指的是同样的东西。Bullet引擎把物体的几何属性称为碰撞形（ColiisionShape）。
+
+在这个实验中，地面、小球、木板的CollisionShape是不一样的。小球应该使用 `SphereCollisionShape` ，地面和木板可以使用 `BoxCollisionShape` 。创建对应的CollisionShape后，通过 `setCollisionShape()` 方法就可以把它和刚体关联在一起。
+
+		// 创建球形刚体，质量为0.65kg，半径为0.123m。
+		RigidBodyControl rigidBodyBall = new RigidBodyControl(0.65f);
+		rigidBodyBall.setCollisionShape(new SphereCollisionShape(0.123f));
+
+如果提前创建好了CollisionShape，还可以使用RigidBodyControl的另一个构造方法来进行初始化。
+
+		// 创建球形刚体，质量为0.65kg，半径为0.123m。
+		CollisionShape collisionShape = new SphereCollisionShape(0.123f)
+		RigidBodyControl rigidBodyBall = new RigidBodyControl(collisionShape, 0.65f);
+
+Bullet 提供的 CollisionShape 都位于 `com.jme3.bullet.collision.shapes` 包中，既有一些简单形状，又有一些复杂的网格形状。
+
+#### 简单碰撞形状
+
+简单形状是最常用的，因为碰撞检测的效率较高。下面是 jME3 对应 Bullet 物理引擎实现的CollisionShape 类。
+
+<table>
+  <tr><th>形状</th><th>用途</th><th>例子</th></tr>
+  <tr>
+    <td>BoxCollisionShape</td>
+    <td>方块，不会在平地上滚动。</td>
+    <td>长方形或立方形物体，如砖、箱子、家具。</td>
+  </tr>
+  <tr>
+    <td>SphereCollisionShape</td>
+    <td>球体，在平地上会滚动。</td>
+    <td>像苹果、足球、大炮球、小型宇宙飞船之类的紧凑物体。</td>
+  </tr>
+  <tr>
+    <td>CylinderCollisionShape</td>
+    <td>管状或柱状物体。</td>
+    <td>像柱子一样的长条物体；盘状物体，如轮子、盘子。</td>
+  </tr>
+  <tr>
+    <td>CompoundCollisionShape</td>
+    <td>可以用多个形状来自定义复杂形状，通过
+ <code>addChildShape()</code> 方法可以向其中添加形状，并设定相对位置。</td>
+    <td>车厢和车轮（一个方块+4个圆盘）等。</td>
+  </tr>
+  <tr>
+    <td>CapsuleCollisionShape</td>
+    <td>胶囊体，由一个竖直的圆筒加上下两头的半球体组成。圆筒形的身体不会被墙角或垂直边缘卡住；半球形的顶端和底部不会被楼梯台阶或地面的浅坑卡住。</td>
+    <td>人、动物。</td>
+  </tr>
+  <tr>
+    <td>SimplexCollisionShape</td>
+    <td>极简形状。由一到个四点定义而成的物理点、线、三角形或矩形。</td>
+    <td>空气墙、栅栏。</td>
+  </tr>
+  <tr>
+    <td>PlaneCollisionShape</td>
+    <td>2D平面。</td>
+    <td>平坦坚实的地面或墙壁。</td>
+  </tr>
+</table>
+
+上面这些CollisionShape可用于场景中的运动物体，当然也可用于静态物体。不过，如果你需要对模型做精确的碰撞检测，上面那些形状明显是不够用的。
+
+#### 精确网格形状
+
+Bullet为此提供了**精确网格形状**，可以进行三角网格级别的碰撞检测。出于游戏的性能考虑，jME3不支持对两个**精确网格形状**进行碰撞检测。比如 `MeshCollisionShape`，它适合用作游戏地图的碰撞形状，但是不适合用来当做玩家或动物的形状。
+
+<table>
+  <tr><th>形状</th><th>用途</th><th>例子</th></tr>
+  <tr>
+    <td>MeshCollisionShape</td>
+    <td>一个精确网格形状，能够表现具有开口和附属物的复杂形状。<br/>
+局限性：两个精确网格形状之间无法进行碰撞检测，只有简单形状可以与此形状碰撞。使用这种形状的的物体将无法运动。</td>
+    <td>一个全局静态的精确网格模型。</td>
+  </tr>
+  <tr>
+    <td>HullCollisionShape</td>
+    <td>这是一种不太精确的网格形状，用来表示难以被CompoundCollisionShape描述的物体。它给人的感觉像是把东西装进了布袋中，你看得出来里面有个物体，但布袋的外形并没有与物体表面完全贴合。<br/>局限性：生成的形状是凸多边形。</td>
+    <td>动态三D模型。</td>
+  </tr>
+  <tr>
+    <td>GImpactCollisionShape</td>
+    <td>一种用于动态物体的精确网格形状，算法来源： http://gimpact.sourceforge.net/。<br/>
+局限性：CPU密集型，节约使用！我们建议使用HullCollisionShape（或CompoundCollisionShape）来提高性能。两个精确网格形状之间无法进行碰撞检测，只有简单形状可以与此形状碰撞。</td>
+    <td>虚拟现实或科学模拟中复杂的动态对象（如蜘蛛）。</td>
+  </tr>
+  <tr>
+    <td>HeightfieldCollisionShape</td>
+    <td>为静态地形优化过的精确网格形状。这种形状比其他精确网格形状要快得多。<br/>局限性：需要高度图数据。两个精确网格形状之间无法进行碰撞检测，只有简单形状可以与此形状碰撞。</td>
+    <td>基于高度图实现的静态地形。</td>
+  </tr>
+</table>
+
+#### 使用CollisionShape
+
+使用下面的方法，可以为Geometry的网格生成静态的精确网格形状。
+
+    MeshCollisionShape townShape = new MeshCollisionShape(townGeom.getMesh());
+
+jME3还为生成**精确网格形状**提供了一个工具类：CollisionShapeFactory。
+
+例如，为一座小镇生成静态的精确网格形状：
+
+    CollisionShape shape = CollisionShapeFactory.createMeshShape(town);
+
+或者，为一个动态物体生成网格形状（结果可能是
+ HullCollisionShape 或 CompoundCollisionShape）：
+
+    CollisionShape shape = CollisionShapeFactory.createDynamicMeshShape(spaceCraft);
+
+回到我们的实验，小球使用SphereCollisionShape，地面和木板都可以使用BoxCollisionShape。例如创建地面的碰撞形状，尺寸参考标准篮球场的大小：
+
+		// 创建地板，尺寸为长28m，宽15m，厚0.1m。
+		BoxCollisionShape shape = new BoxCollisionShape(new Vector3f(14f, 0.05f, 7.5f));
+
+创建用来挡住小球的木板形状：
+
+		// 创建木板形状，尺寸为横宽1.8m * 竖高1.05m * 厚0.03m。
+		BoxCollisionShape shape = new BoxCollisionShape(new Vector3f(0.015f, 0.525f, 0.9f));
+
+### 物理属性
+
+#### 质量
+
+刚体的物理属性很多，最基本的是质量。当质量为0时，这个物体就会成为一个静态物体，不会受到任何力的作用。
+
+	// 地面刚体的质量设为0，这样就不会受到任何力的作用。
+	RigidBodyControl rigidBodyFloor = new RigidBodyControl(0);
+
+Bullet引擎中的质量单位为kg，刚体的默认质量为1kg。通过
+ `setMass()` 方法可以调整物体的质量。
+
+	RigidBodyControl rigidBodyFloor = new RigidBodyControl();
+	rigidBodyFloor.setMass(0);
+
+注意，对于使用精确网格形状的物体，质量必须设为0，否则为报错，因为这种物体通常都是全局静态的。
+
+#### 速度
+
+线速度（LinearVelocity）是用3D向量来表示的，向量的方向即速度的方向，向量的长度即速度的大小，速度大小的单位是 **米/秒**。
+
+下面的代码意味着让小球斜向上飞出，速率为 5m/s
+
+    rigidBodyBall.setLinearVelocity(new Vector3f(4, 3, 0));
+
+![Linear Velocity](/content/images/2017/06/linear_velocity.png)
+
+重力加速度（Gravity）与速度的表示类似，让物体受到一个垂直向下的重力加速度，是这样的：
+
+    rigidBodyBall.setGravity(new Vector3f(0, -9.8f, 0));
+
+角速度（AngularVelocity）也是用3D向量来表示的。Bullet使用欧拉角来描述物体的旋转，3D向量的每个分量代表绕x、y、z轴旋转的速度，单位是 **弧度/秒**。
+
+下面的代码意味着让小球绕X轴顺时针旋转，速度为 3.14 rad/s。
+
+    rigidBodyBall.setAngularVelocity(new Vector3f(3.14f, 0, 0));
+
+改变物体的速度，能让一个静止的物体运动起来。
+
+#### 阻尼
+
+物体在运动的时候，由于受到阻尼（Damping）的影响，运动速率会逐渐降低直至归零。
+
+    // 设置物体运动的阻尼
+    rigidBodyBall.setLinearDamping(0.1f);
+    rigidBodyBall.setAngularDamping(0.1f);
+
+摩擦力（Friction）是一种产生阻尼的方式，物体表面并不完全光滑，在受到压力作用时，就会产生摩擦力。一般物体表面的摩擦系数大于0，只有绝对光滑的物体摩擦系数为0。
+
+    // 设置物体表面的摩擦系数
+    rigidBodyBall.setFriction(0.2f);
+
+#### 弹性系数
+
+弹性系数（Restitution）表示物体在发生碰撞后速度的改变程度，取值范围为0.0到1.0。
+
+在两个发生碰撞的物体之中，如果任何一个物体的弹性系数为0时，垂直于碰撞面法线方向的速度会完全消除。小球落地后完全不会弹起来，感觉就像一拳打在了棉花上。
+
+当两个物体的弹性系数为1时，垂直于碰撞面法线方向的速度会直接取反。小球从多高的地方落下，就会弹起多高。
+
+在Bullet中，所有物体的弹性系数默认为0。我们需要手动设置地板和小球的弹性系数，才能让小球在落地后弹起来。
+
+    rigidBodyFloor.setRestitution(1.0f);
+    rigidBodyBall.setRestitution(0.8f);
+
+#### 力
+
+力（Force）使用3D向量表示。当力的作用方向穿透物体的质心时，物体将会产生线性的加速度。当力的作用位置不在质心上时，物体可能就会发生旋转（例如开门）。
+
+有3种方法来对物体施加力的影响。 `applyForce(..)` 方法可以对物体施加持续的力；`applyTorque(..)` 方法可以施加一个扭矩；`applyImpulse(..)` 方法可以施加一个瞬间的冲击力。
+
+对物体施加力的作用，能让一个静止的物体运动起来。
+
+#### 位置
+
+物体是处于物理空间中的，通过 `setPhysicsLocaltion()` 和 `setPhysicsRotation()` 可以改变物体的位置和旋转。
+
+当RigidBodyControl和一个Spatial绑定后，它会根据物体在物理空间中的位置来改变Spatial在场景图中的位置。反过来却不成立，你不能通过`spatial.setLocalTranslation()`来改变物体的位置，这没有意义。
+
+### 第一个物理实验
+
+下面是这个实验的完整代码。在这个例子中，我们没有把刚体和任何模型关联，只是利用
+ `bulletAppState.setDebugEnabled(true);` 方法来可视化观察物体的运动状态。另外，我使用 `jmeClone()` 方法重复创建了10个木板，减少了代码量。
 
 	package net.jmecn.physics3d;
 	
@@ -232,6 +582,7 @@ Havok、PhysX、Bullet，这三大物理引擎均是使用c++进行开发的，�
 			RigidBodyControl rigidBodyFloor = new RigidBodyControl(0);
 			Vector3f halfExtents = new Vector3f(14f, 0.05f, 7.5f);
 			rigidBodyFloor.setCollisionShape(new BoxCollisionShape(halfExtents));
+			rigidBodyFloor.setRestitution(0.8f);// 弹性系数
 			// 将刚体添加到物理空间中
 			physicsSpace.add(rigidBodyFloor);
 			
@@ -242,6 +593,7 @@ Havok、PhysX、Bullet，这三大物理引擎均是使用c++进行开发的，�
 			rigidBodyBall.setPhysicsLocation(new Vector3f(-10, 1, 0));// 在物理世界中的坐标
 			rigidBodyBall.setLinearVelocity(new Vector3f(8, 5, 0));// 线速度
 			rigidBodyBall.setFriction(0.2f);// 摩擦系数
+			rigidBodyBall.setRestitution(0.8f);// 弹性系数
 			physicsSpace.add(rigidBodyBall);
 			
 			// 创建挡板的刚体对象，质量为0.2kg，尺寸为横宽1.8m * 竖高1.05m * 厚0.03m。
@@ -267,6 +619,12 @@ Havok、PhysX、Bullet，这三大物理引擎均是使用c++进行开发的，�
 		}
 	
 	}
+
+效果截图：
+
+![TestBullet](/content/images/2017/06/TestBullet.png)
+
+小球从“篮球场”的一端发射出去，逐一击倒了挡在路上的木板。随着击倒木板的数量增加，小球的运动速度也渐渐归零。
 
 ## Dyn4j物理引擎
 
