@@ -311,7 +311,7 @@ jME3并没有实现Bullet中的软体、液体、布料、粒子等碰撞体，�
 
 对应3种碰撞物体，jME3实现了3种不同的物体控制器（PhysicsControl）：
 
-* CharactorControl
+* CharacterControl
 * RigidyBodyControl
 * GhostControl
 
@@ -540,91 +540,607 @@ Bullet引擎中的质量单位为kg，刚体的默认质量为1kg。通过
 
 物体是处于物理空间中的，通过 `setPhysicsLocaltion()` 和 `setPhysicsRotation()` 可以改变物体的位置和旋转。
 
-当RigidBodyControl和一个Spatial绑定后，它会根据物体在物理空间中的位置来改变Spatial在场景图中的位置。反过来却不成立，你不能通过`spatial.setLocalTranslation()`来改变物体的位置，这没有意义。
+在调用 `spatial.addControl()` 把物理控件和模型绑定时，物体会被自动放置到模型的位置。此后，物体会根据自己在物理空间中的位置来改变Spatial在场景图中的位置。
 
 ### 第一个物理实验
 
 下面是这个实验的完整代码。在这个例子中，我们没有把刚体和任何模型关联，只是利用
  `bulletAppState.setDebugEnabled(true);` 方法来可视化观察物体的运动状态。另外，我使用 `jmeClone()` 方法重复创建了10个木板，减少了代码量。
 
-	package net.jmecn.physics3d;
-	
-	import com.jme3.app.SimpleApplication;
-	import com.jme3.bullet.BulletAppState;
-	import com.jme3.bullet.PhysicsSpace;
-	import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-	import com.jme3.bullet.collision.shapes.SphereCollisionShape;
-	import com.jme3.bullet.control.RigidBodyControl;
-	import com.jme3.math.Quaternion;
-	import com.jme3.math.Vector3f;
-	
-	/**
-	 * 使用Bullet物理引擎
-	 * 
-	 * @author yanmaoyuan
-	 */
-	public class TestBullet extends SimpleApplication {
-		
-		@Override
-		public void simpleInitApp() {
-			cam.setLocation(new Vector3f(-18.317675f, 16.480816f, 13.418682f));
-			cam.setRotation(new Quaternion(0.13746259f, 0.86010045f, -0.3107305f, 0.38049686f));
-			
-			// 初始化物理引擎
-			BulletAppState bulletAppState = new BulletAppState();
-			stateManager.attach(bulletAppState);
-			
-			// 获得Bullet的物理空间，它代表了运转物理规则的世界。
-			PhysicsSpace physicsSpace = bulletAppState.getPhysicsSpace();
-			
-			// 创建地板的刚体对象，尺寸为长28m，宽15m，厚0.1m。
-			// 刚体的质量设为0，这样地板就不会受到任何力的作用。
-			RigidBodyControl rigidBodyFloor = new RigidBodyControl(0);
-			Vector3f halfExtents = new Vector3f(14f, 0.05f, 7.5f);
-			rigidBodyFloor.setCollisionShape(new BoxCollisionShape(halfExtents));
-			rigidBodyFloor.setRestitution(0.8f);// 弹性系数
-			// 将刚体添加到物理空间中
-			physicsSpace.add(rigidBodyFloor);
-			
-			// 创建球形刚体，质量为0.65kg，半径为0.123m。
-			RigidBodyControl rigidBodyBall = new RigidBodyControl(0.65f);
-			float radius = 0.123f;
-			rigidBodyBall.setCollisionShape(new SphereCollisionShape(radius));
-			rigidBodyBall.setPhysicsLocation(new Vector3f(-10, 1, 0));// 在物理世界中的坐标
-			rigidBodyBall.setLinearVelocity(new Vector3f(8, 5, 0));// 线速度
-			rigidBodyBall.setFriction(0.2f);// 摩擦系数
-			rigidBodyBall.setRestitution(0.8f);// 弹性系数
-			physicsSpace.add(rigidBodyBall);
-			
-			// 创建挡板的刚体对象，质量为0.2kg，尺寸为横宽1.8m * 竖高1.05m * 厚0.03m。
-			RigidBodyControl rigidBodyBoard = new RigidBodyControl(0.2f);
-			halfExtents = new Vector3f(0.015f, 0.525f, 0.9f);
-			rigidBodyBoard.setCollisionShape(new BoxCollisionShape(halfExtents));
-			
-			// 克隆10个挡板，从半场开始，间隔一米摆放。
-			for(int i=0; i<10; i++) {
-				RigidBodyControl board = (RigidBodyControl) rigidBodyBoard.jmeClone();
-				board.setPhysicsLocation(new Vector3f(i*1, 0.52f, 0f));
-				// 将刚体添加到Bullet的物理空间中。
-				physicsSpace.add(board);
-			}
-			
-			// 开启调试模式，这样能够可视化观察物体之间的运动。
-			bulletAppState.setDebugEnabled(true);
-		}
-		
-		public static void main(String[] args) {
-			TestBullet app = new TestBullet();
-			app.start();
-		}
-	
-	}
+    package net.jmecn.physics3d;
+    
+    import com.jme3.app.SimpleApplication;
+    import com.jme3.bullet.BulletAppState;
+    import com.jme3.bullet.PhysicsSpace;
+    import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+    import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+    import com.jme3.bullet.control.RigidBodyControl;
+    import com.jme3.math.Quaternion;
+    import com.jme3.math.Vector3f;
+    
+    /**
+     * 使用Bullet物理引擎
+     * 
+     * @author yanmaoyuan
+     */
+    public class TestBullet extends SimpleApplication {
+    
+        @Override
+        public void simpleInitApp() {
+            cam.setLocation(new Vector3f(-18.317675f, 16.480816f, 13.418682f));
+            cam.setRotation(new Quaternion(0.13746259f, 0.86010045f, -0.3107305f, 0.38049686f));
+    
+            // 初始化物理引擎
+            BulletAppState bulletAppState = new BulletAppState();
+            stateManager.attach(bulletAppState);
+    
+            // 获得Bullet的物理空间，它代表了运转物理规则的世界。
+            PhysicsSpace physicsSpace = bulletAppState.getPhysicsSpace();
+    
+            // 创建地板的刚体对象，尺寸为长28m，宽15m，厚0.1m。
+            // 刚体的质量设为0，这样地板就不会受到任何力的作用。
+            RigidBodyControl rigidBodyFloor = new RigidBodyControl(0);
+            Vector3f halfExtents = new Vector3f(14f, 0.05f, 7.5f);
+            rigidBodyFloor.setCollisionShape(new BoxCollisionShape(halfExtents));
+            rigidBodyFloor.setRestitution(0.8f);// 弹性系数
+            // 将刚体添加到物理空间中
+            physicsSpace.add(rigidBodyFloor);
+    
+            // 创建球形刚体，质量为0.65kg，半径为0.123m。
+            RigidBodyControl rigidBodyBall = new RigidBodyControl(0.65f);
+            float radius = 0.123f;
+            rigidBodyBall.setCollisionShape(new SphereCollisionShape(radius));
+            rigidBodyBall.setPhysicsLocation(new Vector3f(-10, 1, 0));// 在物理世界中的坐标
+            rigidBodyBall.setLinearVelocity(new Vector3f(8, 5, 0));// 线速度
+            rigidBodyBall.setFriction(0.2f);// 摩擦系数
+            rigidBodyBall.setRestitution(0.8f);// 弹性系数
+            physicsSpace.add(rigidBodyBall);
+    
+            // 创建挡板的刚体对象，质量为0.2kg，尺寸为横宽1.8m * 竖高1.05m * 厚0.03m。
+            RigidBodyControl rigidBodyBoard = new RigidBodyControl(0.2f);
+            halfExtents = new Vector3f(0.015f, 0.525f, 0.9f);
+            rigidBodyBoard.setCollisionShape(new BoxCollisionShape(halfExtents));
+    
+            // 克隆10个挡板，从半场开始，间隔一米摆放。
+            for (int i = 0; i < 10; i++) {
+                RigidBodyControl board = (RigidBodyControl) rigidBodyBoard.jmeClone();
+                board.setPhysicsLocation(new Vector3f(i * 1, 0.52f, 0f));
+                // 将刚体添加到Bullet的物理空间中。
+                physicsSpace.add(board);
+            }
+    
+            // 开启调试模式，这样能够可视化观察物体之间的运动。
+            bulletAppState.setDebugEnabled(true);
+        }
+    
+        public static void main(String[] args) {
+            TestBullet app = new TestBullet();
+            app.start();
+        }
+    
+    }
+
 
 效果截图：
 
 ![TestBullet](/content/images/2017/06/TestBullet.png)
 
 小球从“篮球场”的一端发射出去，逐一击倒了挡在路上的木板。随着击倒木板的数量增加，小球的运动速度也渐渐归零。
+
+### 例二
+
+在上一个例子中，我们简单地使用了刚体碰撞，让小球击中了地面上的木板。比较遗憾的是，这些物体仅仅是在物理世界中运行，并没有真正和场景图中的物体绑定，而且我们也没法控制小球。
+
+下面我们来做第二个案例，它的主要代码来自于官方教程的[HelloPhysics](https://jmonkeyengine.github.io/wiki/jme3/beginner/hello_physics.html)。在这个案例中，首先我们会把场景中的Geometry和刚体绑定，并且可以通过按键来发射小球，用小球去轰击地面上的砖墙。
+
+    package net.jmecn.physics3d;
+    
+    import com.jme3.app.SimpleApplication;
+    import com.jme3.bullet.BulletAppState;
+    import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+    import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+    import com.jme3.bullet.control.RigidBodyControl;
+    import com.jme3.input.KeyInput;
+    import com.jme3.input.MouseInput;
+    import com.jme3.input.controls.ActionListener;
+    import com.jme3.input.controls.KeyTrigger;
+    import com.jme3.input.controls.MouseButtonTrigger;
+    import com.jme3.light.AmbientLight;
+    import com.jme3.light.DirectionalLight;
+    import com.jme3.material.Material;
+    import com.jme3.math.ColorRGBA;
+    import com.jme3.math.Vector2f;
+    import com.jme3.math.Vector3f;
+    import com.jme3.scene.Geometry;
+    import com.jme3.scene.shape.Box;
+    import com.jme3.scene.shape.Sphere;
+    import com.jme3.scene.shape.Sphere.TextureMode;
+    import com.jme3.texture.Texture;
+    import com.jme3.texture.Texture.WrapMode;
+    
+    /**
+     * 按键发射小球轰击砖墙。
+     * 
+     * @author yanmaoyuan
+     *
+     */
+    public class HelloPhysics extends SimpleApplication implements ActionListener {
+    
+        /**
+         * 开火，发射小球。鼠标左键触发。
+         */
+        public final static String FIRE = "fire";
+        /**
+         * 显示或隐藏BulletAppState的debug形状。按空格键触发。
+         */
+        public final static String DEBUG = "debug";
+    
+        /** 砖块的尺寸 */
+        private static final float brickLength = 0.48f;
+        private static final float brickWidth = 0.24f;
+        private static final float brickHeight = 0.12f;
+    
+        private BulletAppState bulletAppState;
+    
+        @Override
+        public void simpleInitApp() {
+            cam.setLocation(new Vector3f(0, 4f, 6f));
+            cam.lookAt(new Vector3f(2, 2, 0), Vector3f.UNIT_Y);
+    
+            bulletAppState = new BulletAppState();
+            stateManager.attach(bulletAppState);
+    
+            // 初始化按键
+            initKeys();
+    
+            // 初始化光照
+            initLight();
+    
+            // 初始化场景
+            initScene();
+        }
+    
+        @Override
+        public void onAction(String name, boolean isPressed, float tpf) {
+            if (isPressed) {
+                if (FIRE.equals(name)) {
+                    shootBall();
+                } else if (DEBUG.equals(name)) {
+                    boolean debugEnabled = bulletAppState.isDebugEnabled();
+                    bulletAppState.setDebugEnabled(!debugEnabled);
+                }
+            }
+        }
+    
+        /**
+         * 初始化按键输入
+         */
+        private void initKeys() {
+            inputManager.addMapping(FIRE, new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+            inputManager.addMapping(DEBUG, new KeyTrigger(KeyInput.KEY_SPACE));
+            inputManager.addListener(this, FIRE, DEBUG);
+        }
+    
+        /**
+         * 初始化光照
+         */
+        private void initLight() {
+            // 环境光
+            AmbientLight ambient = new AmbientLight();
+            ambient.setColor(new ColorRGBA(0.3f, 0.3f, 0.3f, 1f));
+    
+            // 阳光
+            DirectionalLight sun = new DirectionalLight();
+            sun.setDirection(new Vector3f(-1, -2, -3).normalizeLocal());
+    
+            rootNode.addLight(ambient);
+            rootNode.addLight(sun);
+        }
+    
+        /**
+         * 初始化场景
+         */
+        private void initScene() {
+            makeFloor();
+            makeWall();
+        }
+    
+        /**
+         * 制作地板
+         */
+        private void makeFloor() {
+            // 网格
+            Box floor = new Box(10f, 0.1f, 5f);
+            floor.scaleTextureCoordinates(new Vector2f(3, 6));
+    
+            // 材质
+            Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            Texture tex = assetManager.loadTexture("Textures/Terrain/Pond/Pond.jpg");
+            tex.setWrap(WrapMode.Repeat);
+            mat.setTexture("ColorMap", tex);
+    
+            // 几何体
+            Geometry geom = new Geometry("floor", floor);
+            geom.setMaterial(mat);
+            geom.setLocalTranslation(0, -0.1f, 0);// 将地板下移一定距离，让表面和xoz平面重合。
+    
+            // 刚体
+            RigidBodyControl rigidBody = new RigidBodyControl(0);
+            geom.addControl(rigidBody);
+            rigidBody.setCollisionShape(new BoxCollisionShape(new Vector3f(10f, 0.1f, 5f)));
+    
+            rootNode.attachChild(geom);
+            bulletAppState.getPhysicsSpace().add(rigidBody);
+        }
+    
+        /**
+         * 建造一堵墙
+         */
+        private void makeWall() {
+            // 利用for循环生成一堵由众多砖块组成的墙体。
+            float startpt = brickLength / 4;
+            float height = 0;
+            for (int j = 0; j < 15; j++) {
+                for (int i = 0; i < 6; i++) {
+                    Vector3f vt = new Vector3f(i * brickLength * 2 + startpt, brickHeight + height, 0);
+                    makeBrick(vt);
+                }
+                startpt = -startpt;
+                height += 2 * brickHeight;
+            }
+        }
+    
+        /**
+         * 在指定位置放置一个物理砖块
+         * 
+         * @param loc
+         *            砖块的位置
+         */
+        private void makeBrick(Vector3f loc) {
+            // 网格
+            Box box = new Box(brickLength, brickHeight, brickWidth);
+            box.scaleTextureCoordinates(new Vector2f(1f, .5f));
+    
+            // 材质
+            Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            Texture tex = assetManager.loadTexture("Textures/Terrain/BrickWall/BrickWall.jpg");
+            mat.setTexture("ColorMap", tex);
+    
+            // 几何体
+            Geometry geom = new Geometry("brick", box);
+            geom.setMaterial(mat);
+            geom.setLocalTranslation(loc);// 把砖块放在指定位置
+    
+            // 刚体
+            RigidBodyControl rigidBody = new RigidBodyControl(2f);
+            geom.addControl(rigidBody);
+            rigidBody.setCollisionShape(new BoxCollisionShape(new Vector3f(brickLength, brickHeight, brickWidth)));
+    
+            rootNode.attachChild(geom);
+            bulletAppState.getPhysicsSpace().add(rigidBody);
+        }
+    
+        /**
+         * 从摄像机所在位置发射一个小球，初速度方向与摄像机方向一致。
+         */
+        private void shootBall() {
+            // 网格
+            Sphere sphere = new Sphere(32, 32, 0.4f, true, false);
+            sphere.setTextureMode(TextureMode.Projected);
+    
+            // 材质
+            Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            Texture tex = assetManager.loadTexture("Textures/Terrain/Rock/Rock.PNG");
+            mat.setTexture("ColorMap", tex);
+    
+            // 几何体
+            Geometry geom = new Geometry("cannon ball", sphere);
+            geom.setMaterial(mat);
+    
+            // 刚体
+            RigidBodyControl rigidBody = new RigidBodyControl(1f);
+            geom.addControl(rigidBody);
+            rigidBody.setCollisionShape(new SphereCollisionShape(0.4f));
+            rigidBody.setPhysicsLocation(cam.getLocation());// 位置
+            rigidBody.setLinearVelocity(cam.getDirection().mult(25));// 初速度
+    
+            rootNode.attachChild(geom);
+            bulletAppState.getPhysicsSpace().add(rigidBody);
+        }
+    
+        public static void main(String[] args) {
+            HelloPhysics app = new HelloPhysics();
+            app.start();
+        }
+    }
+
+### 例三
+
+下面我们来解决一个问题：如何才能让玩家在地图上行走，并且不从地图上掉落？
+
+不想让玩家从地图上落下去很容易，只要对地图模型使用RigidBodyControl，并把质量设为0即可。
+
+        /**
+         * 初始化场景
+         */
+        private void initScene() {
+            // 从zip文件中加载地图场景
+            assetManager.registerLocator("town.zip", ZipLocator.class);
+            Spatial sceneModel = assetManager.loadModel("main.scene");
+    
+            // 为地图创建精确网格形状
+            CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(sceneModel);
+            RigidBodyControl landscape = new RigidBodyControl(sceneShape, 0);
+            sceneModel.addControl(landscape);
+            
+            rootNode.attachChild(sceneModel);
+            bulletAppState.getPhysicsSpace().add(landscape);
+        }
+
+*注：如果你没有town.zip文件，可以从此处下载：[jME3Tutorials/town.zip](https://github.com/jmecn/jME3Tutorials/raw/master/town.zip)。下载后，将其放在工程的根目录下即可，不必放到assets目录中。*
+
+对于玩家而言，RigidBodyControl就有点不够用了。玩家会走、会跳，遇到障碍物还能跨越过去，这些特性可以通过CharacterControl来实现。
+使用胶囊体来作为玩家的碰撞形状，并使用CharecterControl来控制角色物体。代码如下：
+
+        /**
+         * 初始化玩家
+         */
+        private void initPlayer() {
+            // 使用胶囊体作为玩家的碰撞形状
+            CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.3f, 1.8f, 1);
+            float stepHeight = 0.5f;// 玩家能直接登上多高的台阶？
+            
+            // 使用CharacterControl来控制玩家物体
+            CharacterControl player = new CharacterControl(capsuleShape, stepHeight);
+            player.setJumpSpeed(10);// 起跳速度
+            player.setFallSpeed(55);// 坠落速度
+            player.setGravity(9.8f * 3);// 重力加速度
+            player.setPhysicsLocation(new Vector3f(0, 10, 0));// 位置
+            
+            bulletAppState.getPhysicsSpace().add(player);
+        }
+
+为了让玩家能够操纵角色，CharacterControl对象应该作为一个类的属性而存在，这样我们就可以在玩家触发按键输入后控制它。
+
+比如，调用 `player.jump()` 方法可以让角色跳跃。可以通过 `player.onGround()` 方法判断角色是否站在地面上。
+
+        public void onAction(String binding, boolean isPressed, float tpf) {
+            if ("Jump".equals(name)) {
+                if (isPressed) {
+                    player.jump();
+                }
+            }
+        }
+    
+想让角色行走，可以调用 `player.setWalkDirection()` 方法。行走方向的参数是一个3D向量。向量的方向即行走的方向，向量的长度则是行走的速度，单位是 **m/s**。
+
+在第一人称视角游戏中，玩家一般通过 AWSD 键或↑↓ ←→ 键来控制角色移动，行走方向是根据摄像机方向计算出来的。
+
+        private CharacterControl player;
+        private Vector3f walkDirection = new Vector3f(0, 0, 0);
+        private boolean left = false, right = false, up = false, down = false;
+        
+        public void simpleUpdate(float tpf) {
+            camDir.set(cam.getDirection()).multLocal(0.6f);
+            camLeft.set(cam.getLeft()).multLocal(0.4f);
+            walkDirection.set(0, 0, 0);
+            if (left) {// 玩家按下了←
+                walkDirection.addLocal(camLeft);
+            }
+            if (right) {// 玩家按下了→
+                walkDirection.addLocal(camLeft.negate());
+            }
+            if (up) {// 玩家按下了↑
+                walkDirection.addLocal(camDir);
+            }
+            if (down) {// 玩家按下了↓
+                walkDirection.addLocal(camDir.negate());
+            }
+            player.setWalkDirection(walkDirection);
+            cam.setLocation(player.getPhysicsLocation());
+        }
+
+第三人称视角的游戏，如果是通过鼠标拾取地面坐标来控制角色，则需要根据目标点来计算运动的方向。通常来说，这种移动方式需要另外的 MotionControl 或 AiControl 来计算运动的方向或路径。计算出运动方向后，依然是调用 `player.setWalkDirection()` 方法来让角色行动。
+
+        public void setTarget(Vector3f target) {
+            Vector3f walkDirection = target.subtract(player.getPhysicsLocation();
+            walkDirection.y = 0;// 把移动方向限制在水平面上。
+            walkDirection.normalizeLocal();// 单位化
+            walkDirection.multLocal(25);// 改变速率
+            player.setWalkDirection(walkDirection);
+        }
+
+最后，本例的完整代码如下：
+
+    package net.jmecn.physics3d;
+    
+    import com.jme3.app.SimpleApplication;
+    import com.jme3.asset.plugins.ZipLocator;
+    import com.jme3.bullet.BulletAppState;
+    import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+    import com.jme3.bullet.collision.shapes.CollisionShape;
+    import com.jme3.bullet.control.CharacterControl;
+    import com.jme3.bullet.control.RigidBodyControl;
+    import com.jme3.bullet.util.CollisionShapeFactory;
+    import com.jme3.input.KeyInput;
+    import com.jme3.input.controls.ActionListener;
+    import com.jme3.input.controls.KeyTrigger;
+    import com.jme3.light.AmbientLight;
+    import com.jme3.light.DirectionalLight;
+    import com.jme3.math.ColorRGBA;
+    import com.jme3.math.Vector3f;
+    import com.jme3.scene.Spatial;
+    
+    /**
+     * 演示角色在地图中自由行走。
+     * 
+     * @author yanmaoyuan
+     *
+     */
+    public class HelloCollision extends SimpleApplication implements ActionListener {
+        /**
+         * 显示或隐藏BulletAppState的debug形状。按F1键触发。
+         */
+        public final static String DEBUG = "debug";
+    
+        // 前、后、左、右、跳跃
+        public final static String FORWARD = "forward";
+        public final static String BACKWARD = "backward";
+        public final static String LEFT = "left";
+        public final static String RIGHT = "right";
+        public final static String JUMP = "jump";
+    
+        private BulletAppState bulletAppState;
+    
+        // 角色控制器
+        private CharacterControl player;
+        private Vector3f walkDirection = new Vector3f();
+        private boolean left = false, right = false, up = false, down = false;
+    
+        // 临时变量，用于保存摄像机的方向。避免在simpleUpdate中重复创建对象。
+        private Vector3f camDir = new Vector3f();
+        private Vector3f camLeft = new Vector3f();
+    
+        @Override
+        public void simpleInitApp() {
+            bulletAppState = new BulletAppState();
+            stateManager.attach(bulletAppState);
+    
+            // 初始化按键
+            initKeys();
+    
+            // 初始化光照
+            initLight();
+    
+            // 初始化场景
+            initScene();
+    
+            // 初始化玩家
+            initPlayer();
+        }
+    
+        @Override
+        public void simpleUpdate(float tpf) {
+            camDir.set(cam.getDirection()).multLocal(0.6f);
+            camLeft.set(cam.getLeft()).multLocal(0.4f);
+            walkDirection.set(0, 0, 0);
+    
+            // 计算运动方向
+            boolean changed = false;
+            if (left) {
+                walkDirection.addLocal(camLeft);
+                changed = true;
+            }
+            if (right) {
+                walkDirection.addLocal(camLeft.negate());
+                changed = true;
+            }
+            if (up) {
+                walkDirection.addLocal(camDir);
+                changed = true;
+            }
+            if (down) {
+                walkDirection.addLocal(camDir.negate());
+                changed = true;
+            }
+            if (changed) {
+                walkDirection.y = 0;// 将行走速度的方向限制在水平面上。
+                walkDirection.normalizeLocal();// 单位化
+                walkDirection.multLocal(0.5f);// 改变速率
+            }
+    
+            player.setWalkDirection(walkDirection);
+            cam.setLocation(player.getPhysicsLocation());
+        }
+    
+        /**
+         * 初始化按键输入
+         */
+        private void initKeys() {
+            inputManager.addMapping(DEBUG, new KeyTrigger(KeyInput.KEY_F1));
+            inputManager.addMapping(LEFT, new KeyTrigger(KeyInput.KEY_A));
+            inputManager.addMapping(RIGHT, new KeyTrigger(KeyInput.KEY_D));
+            inputManager.addMapping(FORWARD, new KeyTrigger(KeyInput.KEY_W));
+            inputManager.addMapping(BACKWARD, new KeyTrigger(KeyInput.KEY_S));
+            inputManager.addMapping(JUMP, new KeyTrigger(KeyInput.KEY_SPACE));
+    
+            inputManager.addListener(this, DEBUG, LEFT, RIGHT, FORWARD, BACKWARD, JUMP);
+        }
+    
+        @Override
+        public void onAction(String name, boolean isPressed, float tpf) {
+            if (DEBUG.equals(name) && isPressed) {
+                boolean debugEnabled = bulletAppState.isDebugEnabled();
+                bulletAppState.setDebugEnabled(!debugEnabled);
+            } else if (LEFT.equals(name)) {
+                left = isPressed;
+            } else if (RIGHT.equals(name)) {
+                right = isPressed;
+            } else if (FORWARD.equals(name)) {
+                up = isPressed;
+            } else if (BACKWARD.equals(name)) {
+                down = isPressed;
+            } else if (JUMP.equals(name) && isPressed) {
+                player.jump();
+            }
+        }
+    
+        /**
+         * 初始化光照
+         */
+        private void initLight() {
+            // 环境光
+            AmbientLight ambient = new AmbientLight();
+            ambient.setColor(new ColorRGBA(0.3f, 0.3f, 0.3f, 1f));
+    
+            // 阳光
+            DirectionalLight sun = new DirectionalLight();
+            sun.setDirection(new Vector3f(-1, -2, -3).normalizeLocal());
+    
+            rootNode.addLight(ambient);
+            rootNode.addLight(sun);
+        }
+    
+        /**
+         * 初始化场景
+         */
+        private void initScene() {
+            // 从zip文件中加载地图场景
+            assetManager.registerLocator("town.zip", ZipLocator.class);
+            Spatial sceneModel = assetManager.loadModel("main.scene");
+    
+            // 为地图创建精确网格形状
+            CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(sceneModel);
+            RigidBodyControl landscape = new RigidBodyControl(sceneShape, 0);
+            sceneModel.addControl(landscape);
+    
+            rootNode.attachChild(sceneModel);
+            bulletAppState.getPhysicsSpace().add(landscape);
+        }
+    
+        /**
+         * 初始化玩家
+         */
+        private void initPlayer() {
+            // 使用胶囊体作为玩家的碰撞形状
+            CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.3f, 1.8f, 1);
+            float stepHeight = 0.5f;// 玩家能直接登上多高的台阶？
+    
+            // 使用CharacterControl来控制玩家物体
+            player = new CharacterControl(capsuleShape, stepHeight);
+            player.setJumpSpeed(10);// 起跳速度
+            player.setFallSpeed(55);// 坠落速度
+            player.setGravity(9.8f * 3);// 重力加速度
+            player.setPhysicsLocation(new Vector3f(0, 10, 0));// 位置
+    
+            bulletAppState.getPhysicsSpace().add(player);
+        }
+    
+        public static void main(String[] args) {
+            HelloCollision app = new HelloCollision();
+            app.start();
+        }
+    }
 
 ## Dyn4j物理引擎
 
