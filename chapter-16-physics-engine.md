@@ -542,7 +542,7 @@ Bullet引擎中的质量单位为kg，刚体的默认质量为1kg。通过
 
 在调用 `spatial.addControl()` 把物理控件和模型绑定时，物体会被自动放置到模型的位置。此后，物体会根据自己在物理空间中的位置来改变Spatial在场景图中的位置。
 
-### 第一个物理实验
+### 例一
 
 下面是这个实验的完整代码。在这个例子中，我们没有把刚体和任何模型关联，只是利用
  `bulletAppState.setDebugEnabled(true);` 方法来可视化观察物体的运动状态。另外，我使用 `jmeClone()` 方法重复创建了10个木板，减少了代码量。
@@ -854,6 +854,10 @@ Bullet引擎中的质量单位为kg，刚体的默认质量为1kg。通过
         }
     }
 
+下图为被小球击倒的墙体截图。
+
+![HelloPhysics](/content/images/2017/06/HelloPhysics.png)
+
 ### 例三
 
 下面我们来解决一个问题：如何才能让玩家在地图上行走，并且不从地图上掉落？
@@ -900,21 +904,23 @@ Bullet引擎中的质量单位为kg，刚体的默认质量为1kg。通过
             bulletAppState.getPhysicsSpace().add(player);
         }
 
-为了让玩家能够操纵角色，CharacterControl对象应该作为一个类的属性而存在，这样我们就可以在玩家触发按键输入后控制它。
+在上述代码中，我们使用3个参数构造了一个胶囊体（`new CapsuleCollisionShape(0.3f, 1.8f, 1);`），这3个参数的含义分别是：胶囊的半径，胶囊的高度，胶囊的纵轴与Y轴平行 (0=X,1=Y,2=Z)。
+
+实例化CharacterControl时，我们使用了胶囊体形状，并设置了“角色”的“步高”，“步高”指的是“角色”在行走时能够上多高的台阶。比较特别的是，“角色”是没有“质量”这个属性的，即不能直接对其施加力的作用。但是如果有刚体和角色发生碰撞，角色会被撞飞。
+
+为了让玩家能够操纵角色，CharacterControl对象应该定义为全局对象，这样我们就可以在玩家触发按键输入后控制它。
 
 比如，调用 `player.jump()` 方法可以让角色跳跃。可以通过 `player.onGround()` 方法判断角色是否站在地面上。
 
-        public void onAction(String binding, boolean isPressed, float tpf) {
-            if ("Jump".equals(name)) {
-                if (isPressed) {
-                    player.jump();
-                }
+        public void onAction(String name, boolean isPressed, float tpf) {
+            if ("Jump".equals(name) && isPressed) {
+                player.jump();
             }
         }
     
 想让角色行走，可以调用 `player.setWalkDirection()` 方法。行走方向的参数是一个3D向量。向量的方向即行走的方向，向量的长度则是行走的速度，单位是 **m/s**。
 
-在第一人称视角游戏中，玩家一般通过 AWSD 键或↑↓ ←→ 键来控制角色移动，行走方向是根据摄像机方向计算出来的。
+在第一人称视角游戏中，摄像机的位置应该与CharacterControl的位置保持同步，这样玩家就能从角色的视角去观察世界。玩家通过 AWSD 键或↑↓ ←→ 键来控制角色移动时，角色行走的方向要根据摄像机的朝向来计算。
 
         private CharacterControl player;
         private Vector3f walkDirection = new Vector3f(0, 0, 0);
@@ -937,8 +943,10 @@ Bullet引擎中的质量单位为kg，刚体的默认质量为1kg。通过
                 walkDirection.addLocal(camDir.negate());
             }
             player.setWalkDirection(walkDirection);
-            cam.setLocation(player.getPhysicsLocation());
+            cam.setLocation(player.getPhysicsLocation());// 保持同步
         }
+
+另外，在第一人称视角游戏中，我们可以不用加载玩家自身的角色模型，因为玩家通过摄像机很难看到自己的模样。如果想要让玩家能够看到身体的一部分（手、脚、肚子之类的），可以使用一个简化的模型，例如无头人。
 
 第三人称视角的游戏，如果是通过鼠标拾取地面坐标来控制角色，则需要根据目标点来计算运动的方向。通常来说，这种移动方式需要另外的 MotionControl 或 AiControl 来计算运动的方向或路径。计算出运动方向后，依然是调用 `player.setWalkDirection()` 方法来让角色行动。
 
@@ -1142,5 +1150,523 @@ Bullet引擎中的质量单位为kg，刚体的默认质量为1kg。通过
         }
     }
 
+下图为玩家在一人称视角看到的场景。
+
+![HelloCollision](/content/images/2017/06/HelloCollision.png)
+
+### 例四
+
+前面几个例子看起来都很美好，下面我们要解决几个实际开发中的问题。
+
+#### 问题分析
+
+首先，请观察下面几幅图。
+
+图一：Jaime的模型和胶囊体的尺寸不一样，而且原点也不重合，导致Jaime看起来是浮在天上的。
+
+![比例问题](/content/images/2017/06/ScaleProblem.png)
+
+图二：我们把Jaime放大为与原来2倍，使它与胶囊体的尺寸保持一致，但由于原点坐标不重合，它看起来依然是浮空的。
+
+![原点坐标不重合](/content/images/2017/06/OriginProblem.png)
+
+图三：寒冰射手艾希的模型，与胶囊体的原点坐标有偏差，而且比例不统一，看起来像是陷进地里了。
+
+![原点不重合，比例不统一。](/content/images/2017/06/ScaleProblem2.png)
+
+上图中出现的问题，都是在尝试把3D模型和物理控件绑定时出的问题。不仅是角色模型，就算是简单的方块、球体，也同样会出现类似的问题，为什么？
+
+这是因为，模型和物理碰撞体分别处于两个世界中，这两个世界的标准不统一。Bullet物理引擎采用公制单位，但谁知道3D模型采用的是什么单位呢？虽然不太可能有物理引擎采用英制单位，但不同引擎的标准不是我们能够控制的。
+
+再者，我们加载的3D模型，在建模时的原点坐标位于何处，这也不确定。有些游戏模型喜欢以角色的脚底为原点，有些则以模型的中心为原点。这都无可厚非，重要的是游戏开发前应该统一标准和规范。不要等到出了问题再回头修改，重做的成本太大了。
+
+在前面几幅图中，我只是随手拣了几个模型来做示范。在实际的游戏开发中，最好是先建立标准，然后再进行建模。如果你是从其他途径获得的游戏模型，最好先搞清楚建模时的标准再进行开发。
+
+#### 模型适配
+
+下面，我来介绍一种解决标准不统一问题的方法，对模型和胶囊体的位置、尺寸进行适配。
+
+到目前为止，我们都是直接把物理控制器（PhysicsControl）和Spatial关联在一起（如下图）。由于物体和Spatial的标准不统一，就会造成前面的问题。
+
+![ModelNode](/content/images/2017/06/ModelNode.png)
+
+我们换一个方式，先创建一个“角色”节点，把物体控制器（PhysicsControl）和它关联在一起。同时，把模型的Spatial对象也挂在这个“角色”节点下方。如果你想灵活调整摄像机的位置，还可以再创建一个摄像机节点挂在“角色”节点中。
+
+![CharacterNode](/content/images/2017/06/CharacterNode.png)
+
+由于3D模型是这个“角色”节点的子节点，因此在“角色”节点随物体运动时，模型也会随父节点运动。同时，我们可以调整模型的尺寸、朝向，并改变它相对父节点的位置（比如下移一点距离）。通过这种方式，就可以调整角色模型，使其能够和碰撞体近似重合。
+
+        /**
+         * 初始化玩家
+         */
+        private void initPlayer() {
+            float radius = 0.3f;// 胶囊半径0.3米
+            float height = 1.8f;// 胶囊身高1.8米
+            float stepHeight = 0.5f;// 角色步高0.5米
+            
+            /**
+             * 创建角色根节点
+             */
+            character = new Node("Character");
+            rootNode.attachChild(character);
+            
+            // 加载角色的模型
+            Spatial model = assetManager.loadModel("Models/Jaime/Jaime.j3o");
+            model.move(0, -(height/2+radius), 0);
+            model.scale(1.8f);
+            character.attachChild(model);// 挂到角色根节点下
+
+            // 使用胶囊体作为玩家的碰撞形状
+            CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(radius, height, 1);
+    
+            // 使用CharacterControl来控制玩家物体
+            player = new CharacterControl(capsuleShape, stepHeight);
+            character.addControl(player);// 绑定角色控制器
+            
+            player.setJumpSpeed(10);// 起跳速度
+            player.setFallSpeed(55);// 坠落速度
+            player.setGravity(9.8f * 3);// 重力加速度
+            player.setPhysicsLocation(new Vector3f(0, height/2+radius, 0));// 位置
+    
+            bulletAppState.getPhysicsSpace().add(player);
+        }
+
+结果：
+
+![Adjusted](/content/images/2017/06/Adjusted.png)
+
+对于胶囊体而言，模型需要下移多少距离是比较容易计算的，即半个圆筒的高度+球的半径(`height/2+radius`)。模型缩放的比例就不太好计算了。对于未知来源的模型，要么通过包围盒的高度来计算，要么还是手动试吧。
+
+#### 修正摄像机位置
+
+由于胶囊体的原点在正中心，直接使用 `player.getPhysicsLocation()` 来同步摄像机的坐标，玩家会感觉眼睛长在腰上。我们可以创建一个辅助节点，专门用来同步摄像机的位置。
+
+        // 创造一个辅助节点，用于修正摄像机的位置。
+        Node camNode = new Node("Camera");
+        character.attachChild(camNode);
+        camNode.setLocalTranslation(0, height/2, 0);// 将此节点上移一段距离，使摄像机位于角色的头部。
+
+作为“角色”的子节点，此辅助节点会随父节点一起运动。我们用它的世界坐标来同步摄像机的位置，就能让玩家感觉摄像机处于角色“眼睛”的位置。
+
+        @Override
+        public void simpleUpdate(float tpf) {
+            // 同步摄像机位置
+            cam.setLocation(camNode.getWorldTranslation());
+        }
+
+这种做法更适合第一人称游戏，而第三人称游戏的摄像机焦点一般位于角色的中心。如果你要切换成第三人称视角，可以使用ChaseCamera，并直接把“角色”根节点设为焦点摄像机的焦点。
+
+    ChaseCamera chaseCam = new ChaseCamera(cam, character, inputManager);
+
+#### 参考代码
+
+下面是一个更复杂的例子，使用第三人称控制Jaime在地图中走来走去。
+
+![PhysicsJaime](/content/images/2017/06/PhysicsJaime.png)
+
+这个例子基于例三，不过我对它进行了重构，把主要功能分解到了多个AppState中，并额外增加了一些功能。
+
+* [Main](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/physics3d/jaime/Main.java) 这是主类，程序启动的入口。
+* [SceneAppState](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/physics3d/jaime/SceneAppState.java) 这是游戏场景类，主要作用就是加载小镇模型，并设为不可动的刚体。
+* [CharacterAppState](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/physics3d/jaime/CharacterAppState.java) 这是用来控制角色的类。出了加载Jaime的模型，并为其增加物理属性以外，我还把在以前介绍过的骨骼动画技术也应用到了其中。
+* [InputAppState](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/physics3d/jaime/InputAppState.java) 这个类专门用来处理用户输入。你可以通过ASWD按键来移动Jaime，空格键跳跃，F1键开关调试网格。
+
+由于代码实在太多，我就不直接贴出来了。点击上面的超链接即可阅读源代码。
+
+在这个例子中，我耍了一点小花招。角色的运动方向，先是在InputAppState的 `walk()` 方法中计算了一次，确定了运动的**相对方向**。然后，在CharacterAppState的 `update()` 方法中，根据摄像机的朝向，把相对方向**旋转成了绝对方向**。如果你在阅读这段代码时有困难，可能意味着需要复习一下3D数学知识。
+
+关于Bullet物理引擎，就先介绍到这里。
+
 ## Dyn4j物理引擎
 
+jME3是一个3D游戏引擎。虽然它具有开发2D游戏的能力，不过似乎很少有人用它做2D游戏。jME3没有集成2D物理引擎，需要我们自己动手搞定。dyn4j是一款纯Java开发的开源2D物理引擎，我推荐使用它作为首选的2D物理引擎。
+
+也许Box2d是比dyn4j更好的选择，但我并没有选择它，主要原因是集成起来太麻烦了。Box2d是用C++开发的，在Java中使用Box2d需要开发额外的JNI接口，而且要带着一大堆dll、so文件。虽然已经有人开发过Box2d的Java接口（例如[jbox2d](https://github.com/jbox2d/jbox2d)以及[libgdx](https://github.com/libgdx/libgdx)的扩展项目[gdx-box2d](https://github.com/libgdx/libgdx/tree/master/extensions/gdx-box2d)），但我总嫌Box2d太过重量级。
+
+dyn4j的优点很多，首先它是纯Java开发的，天然具有跨平台优势。第二，dyn4j的文档很丰富，而且有很多学习的例子。第三，集成 dyn4j 只需要一个不到400 KiB 大小的jar文件，非常方便。第四，dyn4j的实际运算效率并不低，至少在我看来是可以接受的。第五，我不喜欢杀鸡用牛刀，如果开发游戏时真的遇到dyn4j解决不了的问题，我会尝试box2d（目前还没有遇到这种情况）。第六，jME3社区有人模仿BulletAppState的模式，为dyn4j开发了一个插件[jME3-Dyn4j-plugin](https://github.com/Hec-P/jME3-Dyn4j-plugin)。虽然我嫌他做得太复杂，但是有个人提前帮我们踩坑毕竟也是件不错的事。
+
+我还可以继续列出很多理由，但说得再多也没有意义，不如直接上代码看看效果如何。
+
+dyn4j的官方资料很丰富，但全部都是英文的。相关链接如下：
+
+* [首页](http://www.dyn4j.org/)
+* [下载](https://github.com/wnbittle/dyn4j/releases)
+* [源码](https://github.com/wnbittle/dyn4j)
+* [JavaDoc](http://docs.dyn4j.org/)
+* [教程](http://www.dyn4j.org/documentation/)
+* [论坛](http://forum.dyn4j.org/)
+* [博客](http://www.dyn4j.org/category/blog/)
+
+### 添加dyn4j依赖库
+
+dyn4j引擎只需要一个jar文件，在这里可以下载到最新的发布版本：[https://github.com/wnbittle/dyn4j/releases](https://github.com/wnbittle/dyn4j/releases)。
+
+除了直接把dyn4j的jar文件添加到项目的classpath，你还可以通过maven或gradle来添加dyn4j的依赖。
+
+**Maven**
+
+    <dependency>
+        <groupId>org.dyn4j</groupId>
+        <artifactId>dyn4j</artifactId>
+        <version>3.2.4</version>
+    </dependency>
+
+**Gradle**
+
+    dependencies {
+        // 添加dyn4j依赖库
+        compile 'org.dyn4j:dyn4j:3.2.4'
+    }
+
+### 使用方法
+
+物理引擎的使用方法大同小异。想要使用dyn4j来为物体增加物理属性，一般分为下面几个步骤。
+
+1. 创建一个物理世界（World）的实例。
+2. 创物体（Body）对象，设置它的碰撞形状（Rectangle、Circle、Triangle等），并把它添加到物理世界中。
+3. （可选）创建关节（Joint）对象，用它来关联物体，把这个关节添加到物理世界中。
+4. 把物体和Spatial绑定。
+5. 把Spatial添加到场景图（rootNode）中。
+6. （可选）设置物体的物理属性，诸如质量、速度、作用力等。
+7. 在游戏主循环中调用 World.update(double) 方法，驱动世界运行。
+
+dyn4j有很多参考例子，[Examples](https://github.com/wnbittle/dyn4j/tree/master/examples/org/dyn4j/examples)文件夹中包含分别使用 java Graphics 技术和 JOGL 渲染的小程序；[Samples](https://github.com/wnbittle/dyn4j/tree/master/examples/org/dyn4j/samples)文件夹中有不少具体的案例。
+
+在本文中，我们依然做那个小球撞木板的小实验。前面我们用Bullet物理引擎实现过了，现在用dyn4j引擎再实现一次。
+
+### 物理世界
+
+dyn4j的物理世界类为 `org.dyn4j.dynamics.World`。所有物体、关节都要添加到这个世界中才可以运动。
+
+我们可以直接实例化 World 对象，并在游戏主循环中调用它的 update() 方法，即可驱动其运行。
+
+    package net.jmecn.physics2d;
+
+    import org.dyn4j.dynamics.World;
+    import com.jme3.app.SimpleApplication;
+    
+    /**
+     * 演示Dyn4j物理引擎
+     * 
+     * @author yanmaoyuan
+     *
+     */
+    public class TestDyn4j extends SimpleApplication {
+    
+        // Dyn4j的物理世界
+        private World world = new World();
+        
+        @Override
+        public void simpleInitApp() {
+            // TODO ..
+        }
+        @Override
+        public void simpleUpdate(float tpf) {
+            // 更新Dyn4j物理世界
+            world.update(tpf);
+        }
+    
+        public static void main(String[] args) {
+            TestDyn4j app = new TestDyn4j();
+            app.start();
+        }
+    
+    }
+
+World是有边界的，可以使用dyn4j的AABB包围盒来设置它的边界。
+
+        AxisAlignedBounds aabb = new AxisAlignedBounds(600, 480);// 矩形大小
+        aabb.translate(300, 240);// 中心坐标
+        world.setBounds(aabb);// 设置边界
+
+World中也有一个公共物理属性，最常用的就是重力加速度（Gravity）。
+
+        world.setGravity(new Vector2(0, -9.82));// 设置重力
+        world.setGravity(World.EARTH_GRAVITY);// 地球重力
+        world.setGravity(World.ZERO_GRAVITY);// 失重
+
+dyn4j的物理世界，统一使用公制单位。
+
+* 1 单位长度 = 1 m
+* 1 单位质量 = 1 kg
+* 1 单位速度 = 1 m/s
+* 1 单位力 = 1 N
+* 1 单位密度 = 1 kg/m²。
+* 旋转采用弧度值，3.1415926 单位旋转 = 180°。
+
+考虑到物理引擎的工作效率，我们可以使用一个单独的线程来管理 World 的工作。然而如何管理这个线程并不是我们的重点，所以就不详细介绍了。如果你对具体实现感兴趣，不妨观摩一下这几个类：
+
+* [Dyn4jAppState](https://github.com/Hec-P/jME3-Dyn4j-plugin/blob/master/src/com/jme3/physics/dyn4j/Dyn4jAppState.java)
+* [ThreadingType](https://github.com/Hec-P/jME3-Dyn4j-plugin/blob/master/src/com/jme3/physics/dyn4j/ThreadingType.java)
+* [PhysicsSpace](https://github.com/Hec-P/jME3-Dyn4j-plugin/blob/master/src/com/jme3/physics/dyn4j/PhysicsSpace.java)
+
+这几个类都是模仿BulletAppState的工作模式而改写的。
+
+### dyn4j的基本概念
+
+dyn4j中只有一种物体，即刚体，使用 `org.dyn4j.dynamics.Body`来表示。关节则有很多不同用途的子类，共同继承 `org.dyn4j.dynamics.joint.Joint` 类表示。
+
+Body的**质量**不能直接设置，主要是通过枚举类型 MassType 来设定的。`MassType.INFINITE` 表示无穷大质量，一般用于固定不动的物体，比如地形。 `MassType.NORMAL` 表示普通质量的物体，一般用于活动物体。如果希望精确设置物体的质量，可以通过设置物体各个部位的密度来间接设置。
+
+Body的**物理属性**包括重力加速度（Gravity），线速度（Linear Velocity），角速度（Angular Velocity）、力（Force）等。用法和 Bullet 引擎几乎差不多，比如通过 `applyForce(Vector2 )` 方法可以对物体施加一个瞬间的作用力。
+
+关于Body的**几何属性**，dyn4j定义了很多基本的2D几何形状，位于 `org.dyn4j.geometry` 包中。包括AABB、射线、矩形、圆形、椭圆、三角形、胶囊、线段、折线、顶点等。这些几何形状通称为凸多边形（Convex），均可用于碰撞检测。
+
+每个物体的碰撞形状，可以使用多种几何形状来定义。物体的每个部件称为一个 `BodyFixture `，每个 BodyFixture 中可以存储一个 `Convex` 对象。每个 BodyFixture 可以有自己的物理属性，例如密度（Density）、摩擦系数（Friction）、弹性系数（Restitution）等。
+
+![body-structure](http://www.dyn4j.org/wp-content/uploads/2010/02/body-structure.png)
+
+当一个几何形状刚创建时，默认是处于原点(0, 0)处的，可以使用 `traslate(x, y)` 方法来改变它在物体中的相对位置。
+
+下面的代码，定义了一个圆形的刚体。
+
+        // 创建一个圆形
+        Circle circle = new Circle(0.5);// 创建一个半径0.5米的圆
+        circle.translate(0, 3);// 上移3米
+
+        // 创建物体的部件
+        BodyFixture fixture = new BodyFixture(circle);
+        fixture.setRestitution(0.7);// 弹性系数0.7
+
+        // 创建刚体
+        Body body = new Body();
+        body.addFixture(fixture);// 设置碰撞形状
+        body.setMass(MassType.NORMAL);// 质量
+        body.translate(-10, 1);// 位置坐标
+        body.setLinearVelocity(8, 5);// 线速度
+        body.setLinearDamping(0.05);// 阻尼
+        
+        world.addBody(body);
+    
+### 同步刚体和模型
+
+通过实现AbstractControl，我们可以轻松完成 Body 和 Spatial 的同步。唯一的问题在于，Body处于2D空间，而Spatial处于3D空间，需要把2D的**位移**和**旋转**转化到为3D空间中。我的方案是，把2D位移转化到XOY平面中，然后利用Quaternion来实现的绕Z轴旋转。
+
+为此，我定义了一个BodyControl，用于同步 Body 和 Spatial。代码如下：
+
+    package net.jmecn.physics2d;
+    
+    import org.dyn4j.dynamics.Body;
+    
+    import com.jme3.math.Quaternion;
+    import com.jme3.math.Vector3f;
+    import com.jme3.renderer.RenderManager;
+    import com.jme3.renderer.ViewPort;
+    import com.jme3.scene.control.AbstractControl;
+    import com.jme3.util.TempVars;
+    
+    /**
+     * 物体控制器
+     * 
+     * @author yanmaoyuan
+     *
+     */
+    public class BodyControl extends AbstractControl {
+    
+        private Body body;
+    
+        public BodyControl(final Body body) {
+            this.body = body;
+        }
+    
+        public Body getBody() {
+            return body;
+        }
+    
+        @Override
+        protected void controlUpdate(float tpf) {
+            TempVars temp = TempVars.get();
+    
+            float x = (float) body.getTransform().getTranslationX();
+            float y = (float) body.getTransform().getTranslationY();
+            float z = spatial.getLocalTranslation().z;
+            spatial.setLocalTranslation(x, y, z);
+    
+            Quaternion rotation = temp.quat1;
+            float angle = (float) body.getTransform().getRotation();
+            rotation.fromAngleNormalAxis(angle, Vector3f.UNIT_Z);
+            spatial.setLocalRotation(rotation);
+    
+            temp.release();
+        }
+    
+        @Override
+        protected void controlRender(RenderManager rm, ViewPort vp) {
+        }
+    
+    }
+
+算法本身很简单，只是单纯的同步。不过我在 `controlUpdate()` 方法中使用了 jME3 的工具类 `TempVars`，减少内存泄露。`TempVars` 中定义了很多全局静态变量，适合作为临时变量来使用，可以避免在主循环中反复实例化对象。注意时候后要调用 `release()` 方法释放 TempVars 对象。
+
+### 例五
+
+小球撞木板实验的完整代码如下：
+
+    package net.jmecn.physics2d;
+    
+    import org.dyn4j.dynamics.Body;
+    import org.dyn4j.dynamics.BodyFixture;
+    import org.dyn4j.dynamics.World;
+    import org.dyn4j.geometry.Circle;
+    import org.dyn4j.geometry.MassType;
+    import org.dyn4j.geometry.Rectangle;
+    
+    import com.jme3.app.SimpleApplication;
+    import com.jme3.light.DirectionalLight;
+    import com.jme3.material.Material;
+    import com.jme3.math.ColorRGBA;
+    import com.jme3.math.Quaternion;
+    import com.jme3.math.Vector3f;
+    import com.jme3.scene.Geometry;
+    import com.jme3.scene.shape.Box;
+    import com.jme3.scene.shape.Sphere;
+    
+    /**
+     * 演示Dyn4j物理引擎
+     * 
+     * @author yanmaoyuan
+     *
+     */
+    public class TestDyn4j extends SimpleApplication {
+    
+        // Dyn4j的物理世界
+        private World world = new World();
+    
+        @Override
+        public void simpleInitApp() {
+            // 调整摄像机的位置，便于观察场景。
+            cam.setLocation(new Vector3f(-5.326285f, 13.811526f, 22.174831f));
+            cam.setRotation(new Quaternion(0.024544759f, 0.9620277f, -0.2556783f, 0.09235176f));
+    
+            // 背景色改成白色
+            viewPort.setBackgroundColor(ColorRGBA.White);
+    
+            // 添加光源
+            rootNode.addLight(new DirectionalLight(new Vector3f(-1, -2, -3).normalizeLocal()));
+    
+            makeFloor();
+    
+            makeCircle();
+    
+            makeRectangle();
+        }
+    
+        /**
+         * 创建随机颜色的感光材质
+         * 
+         * @return
+         */
+        private Material getMaterial() {
+            ColorRGBA color = ColorRGBA.randomColor();
+    
+            Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+            mat.setColor("Diffuse", color);
+            mat.setColor("Ambient", color.mult(0.7f));
+            mat.setColor("Specular", ColorRGBA.Black);
+            mat.setFloat("Shininess", 1f);
+            mat.setBoolean("UseMaterialColors", true);
+            return mat;
+        }
+    
+        /**
+         * 建造一个固定的“地板”
+         */
+        private void makeFloor() {
+            // 矩形的高和宽
+            float width = 28f;
+            float height = 0.1f;
+    
+            // 刚体
+            Body body = new Body();
+            body.addFixture(new Rectangle(width, height));// 碰撞形状
+            body.setMass(MassType.INFINITE);// 质量无穷大
+    
+            world.addBody(body);
+    
+            // 几何体
+            // 2D的物体并没有厚度，但jME3毕竟是一个3D引擎。所以也可以用3D方块来表示2D的矩形。 :)
+            Geometry geom = new Geometry("body", new Box(width / 2, height / 2, 0.1f));
+            geom.setMaterial(getMaterial());
+            
+            // 绑定刚体和模型
+            geom.addControl(new BodyControl(body));
+    
+            rootNode.attachChild(geom);
+        }
+    
+        /**
+         * 制造一个圆形
+         */
+        private void makeCircle() {
+            // 半径
+            float radius = 0.123f;
+    
+            // 刚体
+            Body body = new Body();
+    
+            // 碰撞形状
+            BodyFixture fixture = body.addFixture(new Circle(radius));
+            fixture.setRestitution(0.7);// 弹性
+    
+            body.setMass(MassType.NORMAL);// 普通质量
+            body.translate(-10, 1);// 位置坐标
+            body.setLinearVelocity(8, 5);// 线速度
+            body.setLinearDamping(0.05);// 阻尼
+    
+            world.addBody(body);
+    
+            // 几何体
+            Geometry geom = new Geometry("body", new Sphere(32, 32, radius));
+            geom.setMaterial(getMaterial());
+    
+            // 绑定刚体和模型
+            geom.addControl(new BodyControl(body));
+    
+            rootNode.attachChild(geom);
+        }
+    
+        /**
+         * 制造矩形木板
+         */
+        private void makeRectangle() {
+            float width = 0.03f;
+            float height = 1.05f;
+    
+            // 生成10个木板，从半场开始，间隔一米摆放。
+            for (int i = 0; i < 10; i++) {
+                // 刚体
+                Body body = new Body();
+                // 碰撞形状
+                body.addFixture(new Rectangle(width, height));
+                body.setMass(MassType.NORMAL);
+                body.translate(i * 1, height / 2);// 设置位置
+    
+                world.addBody(body);
+    
+                // 几何体
+                Geometry geom = new Geometry("body", new Box(width / 2, height / 2, 0.1f));
+                geom.setMaterial(getMaterial());
+    
+                // 绑定刚体和模型
+                geom.addControl(new BodyControl(body));
+    
+                rootNode.attachChild(geom);
+            }
+        }
+    
+        @Override
+        public void simpleUpdate(float tpf) {
+            // 更新Dyn4j物理世界
+            world.update(tpf);
+        }
+    
+        public static void main(String[] args) {
+            TestDyn4j app = new TestDyn4j();
+            app.start();
+        }
+    
+    }
+
+运行效果如图所示：
+
+![TestDyn4j](/content/images/2017/06/TestDyn4j.png)
