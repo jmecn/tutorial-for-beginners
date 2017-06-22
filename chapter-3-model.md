@@ -12,25 +12,35 @@
 下图来源：[百度经验](http://jingyan.baidu.com/article/a378c960723876b329283073.html)
 
 先制作网格(Mesh)，定义形态。
-![](/content/images/2017/03/r1.png)
+
+![网格](/content/images/2017/03/r1.png)
+
 再选择材质(Material)，贴图(Texture)上色。
-![](/content/images/2017/03/r2.png)
+
+![材质](/content/images/2017/03/r2.png)
 
 ## 模型的来源
 
 模型有很多种来源。一些简单的形状（方块、球体）可以直接用代码来生成，复杂的模型（地形、人物）则需要使用专业工具来建模。
 
-* 程序生成
+**程序生成**
+
  * 基本形状：平面、方块、球体、圆柱体等
  * 算法生成地形：山脉、河流、地牢、迷宫等。[例如这个多边形地形生成算法](http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/)
-* 3D建模
+
+**3D建模**
+
  * 免费建模工具：Blender、Google SketchUp
  * 商业建模工具：Auto CAD、3DS Max、Maya、ZBrush等
-* 3D扫描
+
+**3D扫描**
+
  * 人像扫描
  * 点云扫描
  * 地形测绘
-* 素材网站/商店
+
+**素材网站/商店**
+
  * http://opengamearg.org/
  * http://tf3dm.com/
  * https://sketchfab.com/

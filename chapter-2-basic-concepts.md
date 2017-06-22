@@ -389,40 +389,55 @@ jME3就像一台汽车发动机，点火成功之后发动机就会飞速运转�
 
 除了前面介绍的，SimpleApplication中还定义了很多有用的API。看不懂没关系，先列出来了解一下。
 
-* 场景图管理
- * Node rootNode 3D场景根节点
- * Node guiNode GUI根节点
- * getRootNode()
- * getGuiNode() 
-* 视口
- * ViewPort viewPort
- * ViewPort guiViewPort
- * getViewPort()
- * getGuiViewPort()
-* 摄像机
- * Camera cam
- * FlyCamera flyCam
- * getCamera()
-* 渲染管理器
- * RendererManager renderManager
- * Renderer renderer
- * getRenderManager()
- * getRenderer()
-* 资源管理器
- * AssetManager assetManager
- * getAssetManager()
-* 输入管理
- * InputManager inputManager
- * getInputManager();
- * MouseInput mouseInput 鼠标输入
- * KeyInput keyInput 键盘输入
- * JoyInput joyInput 手柄输入
- * TouchInput touchInput 触屏输入
-* 状态机管理
- * AppStateManager stateManager
- * getStateManager()
-* 声音系统
- * AudioRenderer audioRenderer
- * Listener listener
- * getAudioRenderer()
- * getListener()
+**1. 场景图管理**
+
+* Node rootNode 3D场景根节点
+* Node guiNode GUI根节点
+* getRootNode()
+* getGuiNode() 
+
+**2. 视口**
+
+* ViewPort viewPort
+* ViewPort guiViewPort
+* getViewPort()
+* getGuiViewPort()
+
+**3. 摄像机**
+
+* Camera cam
+* FlyCamera flyCam
+* getCamera()
+
+**4. 渲染管理器**
+
+* RendererManager renderManager
+* Renderer renderer
+* getRenderManager()
+* getRenderer()
+
+**5. 资源管理器**
+
+* AssetManager assetManager
+* getAssetManager()
+
+**6. 输入管理**
+
+* InputManager inputManager
+* getInputManager();
+* MouseInput mouseInput 鼠标输入
+* KeyInput keyInput 键盘输入
+* JoyInput joyInput 手柄输入
+* TouchInput touchInput 触屏输入
+
+**7.状态机管理**
+
+* AppStateManager stateManager
+* getStateManager()
+
+**8. 声音系统**
+
+* AudioRenderer audioRenderer
+* Listener listener
+  getAudioRenderer()
+  getListener()

@@ -8,15 +8,15 @@
 
 你看到了什么，一个三维方块？
 
-![一个三维方块？](http://ww2.sinaimg.cn/bmiddle/005yeTZ6jw1eplpjobgrpg309p06xkjl.gif)
+![一个三维方块？](/content/images/2017/04/paper_cube.gif)
 
 或者是一头瞪着你的龙？
 
-![一只头瞪着你的龙？](http://ww4.sinaimg.cn/bmiddle/005yeTZ6jw1eplpjp4mepg307s053kjl.gif)
+![一只头瞪着你的龙？](/content/images/2017/04/paper_dragon.gif)
 
 这些家具到底谁大谁小？
 
-![近大远小？](http://ww4.sinaimg.cn/bmiddle/005yeTZ6jw1eplpjo6sxug308c064kjd.gif)
+![近大远小？](/content/images/2017/04/fake_room.gif)
 
 这就是本章的主题，障眼法。
 
