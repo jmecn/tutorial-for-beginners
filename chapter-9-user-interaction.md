@@ -443,6 +443,6 @@ jME3的事件处理是在主线程中进行的，这意味着可以直接在监�
 
 ## 本章源码
 
-本章中出现的全部代码，可以直接通过github阅读，地址：[net.jmecn.HelloInput](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/HelloInput.java)
+本章中出现的全部代码，可以直接通过github阅读，地址：[net.jmecn.HelloInput](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/HelloInput.java)
 
 希望通过阅读本章内容之后，你能同样看懂官方教程的代码：[jme3test.helloworld.HelloInput](https://github.com/jMonkeyEngine/jmonkeyengine/blob/master/jme3-examples/src/main/java/jme3test/helloworld/HelloInput.java)

@@ -624,21 +624,21 @@ guiNode中的物体会被绘制到屏幕上，屏幕的单位是像素（pixel�
 
 * Bitmap Font Generator
 
-![Bitmap Font Generator](http://bbs.jmecn.net/uploads/default/original/1X/8a0379a0407ec7be6cfc20b104e5a0157d8746bd.png)
+![Bitmap Font Generator](/content/images/2017/05/BMFontGenerator.png)
 
 * Hiero
 
-![Hiero](http://bbs.jmecn.net/uploads/default/original/1X/485f9d151099eae578f97d4b55a64213f36517d6.png)
+![Hiero](/content/images/2017/05/Hiero.png)
 
 然后，你会得到一个.fnt文件和一个.png文件(如果字符量大，可能会有多个png文件)，这就是你得到的字体。这种字体不仅适用于JME3应用，cocos2d-x、libgdx等游戏引擎也可以使用这种字体。
 
 得到BMFont字体文件后，接下来要在程序中加载这种字体，然后使用它们。JME 3.0实现了对Bitmap Font字体的支持，而且jme3-core.jar这个lib中已经内置了2套字体（可惜是都是英文字符，没有中文。）
 
-![jME3自带字体](http://bbs.jmecn.net/uploads/default/original/1X/44b3542b2c05a4596228af58bf9914e9118982e8.png)
+![jME3自带字体](/content/images/2017/05/DefaultFonts.png)
 
 当你每次启动JME3应用程序的时候，左下角显示的参数其实就是用`Interface/Fonts/Console.fnt`和`Interface/Fonts/Default.fnt`这2个字体。
 
-![StatsAppState](http://bbs.jmecn.net/uploads/default/original/1X/8e7a8feadb54ec4243611e0477c9cadc7dfa1cce.png)
+![StatsAppState](/content/images/2017/05/StatsAppState.png)
 
 JME3也提供了一个样例代码，教你怎么使用BitmapFont。
 
@@ -809,7 +809,7 @@ BitmapFont的缺点也很明显。首先BitmapFont需要专门制作，而且无
 
 #### 使用TTF字体
 
-![jME True Type Font](http://bbs.jmecn.net/uploads/default/original/1X/30edf436bc36644070ea286970670057db572326.jpg)
+![jME True Type Font](/content/images/2017/05/jme3_ttf.jpg)
 
 TTF（TrueTypeFont）是Apple公司和Microsoft公司共同推出的字体文件格式，是各种操作系统中最常用的一种字体文件表示方式。如果你使用的是Windows操作系统，可以直接在自己的`C:/Windows/Fonts/`文件夹下找到很多内置的字体；也可以在网上下载到诸多个性化的字体。
 
@@ -819,7 +819,7 @@ JME3原本是不支持TTF字体的，不过好在2016年3月份有人为JME3社�
 
 这个库的用法及其简单，首先把TTF字体添加到你的项目中，然后把jME-TrueTypeFont这个jar也添加到你的项目中。
 
-![工程结构](http://bbs.jmecn.net/uploads/default/original/1X/b862bc9493d9bd43ab43f04bc3452e46691b7fa0.png)
+![工程结构](/content/images/2017/05/ttf_libs.png)
 
 点击查看项目源码：[True TypeFont Test](https://github.com/jmecn/learnJME3/tree/master/True%20TypeFont%20Test)
 
@@ -1242,7 +1242,7 @@ Lemur依赖下列类库：
 
 这里有一份使用build.gradle来管理Lemur依赖的官方样例：[SimEthereal Basic Example](https://github.com/Simsilica/Examples/tree/master/sim-eth-basic)
 
-这是本教程项目的脚本文件，其中也添加了Lemur依赖：[build.gradle](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/build.gradle)
+这是本教程项目的脚本文件，其中也添加了Lemur依赖：[build.gradle](https://github.com/jmecn/jME3Tutorials/blob/master/build.gradle)
 
 #### 初始化Lemur
 
@@ -1398,14 +1398,14 @@ Lemur还非常贴心地提供了大量样例代码供开发者学习。
 * [com.simsilica.lemur.demo.BasicDemo](https://github.com/jMonkeyEngine-Contributions/Lemur/blob/master/src/main/java/com/simsilica/lemur/demo/BasicDemo.java) 这是`lemur.jar`中自带的Demo，演示了Lemur的核心功能。
 * [com.simsilica.lemur.demo.ProtoDemo](https://github.com/jMonkeyEngine-Contributions/Lemur/blob/master/extensions/LemurProto/src/main/java/com/simsilica/lemur/demo/ProtoDemo.java) 这是`lemur-proto.jar`中自带的Demo，演示了一些试验GUI元素的功能。
 * [Demos](https://github.com/jMonkeyEngine-Contributions/Lemur/tree/master/examples/demos/src/main/java/demo) 这个Demo项目演示了一些常用GUI元素的用法。
- * MainMenuState 主菜单
- * OptionPanelState 对话框
- * PopupPanelDemoState 弹出菜单
- * TextEntryDemoState 文本框
- * FormattedTextEntryDemoState 格式化文本框
- * WordWarpDemoState 文字自动换行
- * DragAndDropDemoState 拖拽
- * ListBoxDemoState 列表框
+   MainMenuState 主菜单
+   OptionPanelState 对话框
+   PopupPanelDemoState 弹出菜单
+   TextEntryDemoState 文本框
+   FormattedTextEntryDemoState 格式化文本框
+   WordWarpDemoState 文字自动换行
+   DragAndDropDemoState 拖拽
+   ListBoxDemoState 列表框
 * [LemurGems](https://github.com/jMonkeyEngine-Contributions/Lemur/blob/master/examples/LemurGems) 这个Demo项目演示了一些更加复杂的GUI，例如在3D场景中的物体“头上”添加一个“血条”。
 
 #### FAQ
@@ -1452,9 +1452,9 @@ Lemur使用的是BitmapFont字体，你得把需要在GUI上显示的文字做�
 
 ### 本章源码
 
-* [net.jmecn.gui.FakePicture](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/gui/FakePicture.java)
-* [net.jmecn.gui.HelloGUI](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/gui/HelloGUI.java)
-* [net.jmecn.gui.HelloPicture](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/gui/HelloPicture.java)
-* [net.jmecn.gui.HelloTTF](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/gui/HelloTTF.java)
-* [net.jmecn.gui.FakeCursor](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/gui/FakeCursor.java)
-* [net.jmecn.lemur.HelloLemur](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/lemur/HelloLemur.java)
+* [net.jmecn.gui.FakePicture](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/gui/FakePicture.java)
+* [net.jmecn.gui.HelloGUI](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/gui/HelloGUI.java)
+* [net.jmecn.gui.HelloPicture](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/gui/HelloPicture.java)
+* [net.jmecn.gui.HelloTTF](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/gui/HelloTTF.java)
+* [net.jmecn.gui.FakeCursor](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/gui/FakeCursor.java)
+* [net.jmecn.lemur.HelloLemur](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/lemur/HelloLemur.java)
