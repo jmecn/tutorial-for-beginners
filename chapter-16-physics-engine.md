@@ -1670,3 +1670,366 @@ Body的**物理属性**包括重力加速度（Gravity），线速度（Linear V
 运行效果如图所示：
 
 ![TestDyn4j](/content/images/2017/06/TestDyn4j.png)
+
+### 例六
+
+上面的例子演示了如何在jME3中使用2D物理引擎，有没有办法把画面也“变成”2D的？
+
+#### 平行投影
+
+首先，应该把摄像机的工作模式改为“平行投影”。
+
+    cam.setParallelProjection(true);// 平行投影
+
+只调用这个方法是有隐患的，一般还需要调整摄像机的分辨率。换言之，我们可能需要把画面放大一点。
+
+当摄像机处于平行投影模式时，画面中的物体不会给人近大远小的感觉。此时，1单位距离 = 1像素，这意味着一个半径为0.5的小球，看上去只有1个像素那么大。假如摄像机的分辨率是1280 * 720，恐怕没有人能够看清它。
+
+注意，我们这里讨论的是**摄像机的分辨率**，不是窗口的分辨率，也不是显示器的分辨率。前者指的是摄像机观察场景的范围有多大，这个范围内的场景最终将会被渲染到游戏窗口中。摄像机的分辨率越小，物体在屏幕上看起来就越大，因为窗口的大小是不变的。
+
+> 如果你无法理解，请随便找两张同样大小的纸来。在第一张纸上画1个尽量大的圆，力求把整张纸占满；在另一张张纸上画10个互不相交的圆，力求让这10个圆把整张纸占满。最后，比较一下两张纸上圆的大小。
+
+前面已经介绍过，dyn4j中的长度单位是“米”，因此，我们最好同样使用“米”作为画面的长度单位。假设我们希望屏幕最宽能看到10米范围内的物体，可以使用下面的方式来调整摄相机分辨率：
+
+    /**
+     * 将摄像机改变为平行模式，并调整分辨率。
+     */
+    private void resetCamera() {
+        // 摄像机原分辨率
+        float width = cam.getWidth();
+        float height = cam.getHeight();
+
+        // 调整后的宽度
+        float w = 10;// 米
+        // 调整后的高度
+        float h = w * height / width;
+
+        // 画面边框离到中心的距离
+        float right = w / 2;// 右
+        float left = -right;// 左
+        float top = h / 2; // 上
+        float bottom = -top;// 下
+        float far = 1000;// 远
+        float near = -1000;// 近
+
+        cam.setFrustum(near, far, left, right, top, bottom);
+        cam.setParallelProjection(true);// 开启平行投影模式
+        cam.lookAtDirection(new Vector3f(0, 0, -1), Vector3f.UNIT_Y);
+    }
+
+上在面的代码中，摄像机的分辨率是通过 `setFrustum()` 方法来改变的。
+
+为摄像机的位置为中心（原点），摄像机的边框分别与X、Y轴相交于4个点，left、right、top、bottom的值即为交点在数轴上的值。
+
+![摄相机分辨率](/content/images/2017/06/CameraDimension.png)
+
+以摄像机所在平面为中心，在垂直方向平行“伸出”两个平面，到摄像机平面的距离分别为near、far。这两个平面之间形成了一个空间，只有处于这个空间内的3D物体才会被渲染到画面上。这个空间也称为“视锥空间”。
+
+当摄像机处于“平行投影”模式时，near平面和far平面的大小的一样的，视锥空间的形状是一个长方体。
+
+![平行投影](/content/images/2017/06/frustum.png)
+
+至于“正交投影”模式，空间的形状则是一个锥形，这也是为什么称其为“视锥”的原因。
+
+![正交投影](/content/images/2017/06/world-view-projection.png)
+
+#### 模型纸片化
+
+在2D游戏中使用3D模型有些浪费，使用方形网格+图片能够节省很大的开销。不过，具体选择什么样的素材与游戏的艺术风格有关，本文只是介绍一种方法。
+
+在例五中，我们使用球体网格（Sphere）来表示2D的圆形，其实完全可以用方形纸片来表示。
+
+下面是一张篮球图片，来源是dyn4j引擎自带的例子。
+
+![篮球](/content/images/2017/06/Basketball.png)
+
+图片本身是方形的，但是画面上除篮球以外的部分都是透明的。我们可以把这个篮球图片用作纸片的纹理贴图，并把材质的“混色模式（BlendMode）”设为“Alpha混色”，这样透明部分就看不见了。
+
+除此之外，还有模型适配的问题，我们在例四中已经处理过一次了。dyn4j中的几何形状，原点都在正中心，但Quad网格的原点却在矩形的左下角。我们可以使用一个 Node 来调整 Geometry 的相对位置，再把 BodyControl 绑定到这个Node上，这个问题就解决了。
+
+下面是重新制作的小球模型。
+
+    /**
+     * 制造一个圆形
+     */
+    private void makeCircle() {
+        // 半径
+        float radius = 0.123f;
+
+        // 刚体
+        Body body = new Body();
+
+        // 碰撞形状
+        BodyFixture fixture = body.addFixture(new Circle(radius));
+        fixture.setRestitution(0.7);// 弹性
+
+        body.setMass(MassType.NORMAL);// 普通质量
+        body.translate(-5, 1.5);// 位置坐标
+        body.setLinearVelocity(8, 5);// 线速度
+        body.setLinearDamping(0.05);// 阻尼
+
+        world.addBody(body);
+
+        // 纹理贴图
+        Texture tex = assetManager.loadTexture("Textures/Dyn4j/Samples/Basketball.png");
+        tex.setWrap(WrapMode.Repeat);
+        // 材质
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setTexture("ColorMap", tex);
+        mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+
+        // 几何体
+        Quad quad = new Quad(radius * 2, radius * 2);
+        Geometry geom = new Geometry("body", quad);
+        geom.setMaterial(mat);
+
+        // 辅助节点
+        Node node = new Node("Ball");
+        node.addControl(new BodyControl(body));
+
+        // 调整相对位置。
+        node.attachChild(geom);
+        geom.setLocalTranslation(-radius, -radius, 0);
+
+        rootNode.attachChild(node);
+    }
+
+#### 完整代码
+
+    package net.jmecn.physics2d;
+    
+    import org.dyn4j.dynamics.Body;
+    import org.dyn4j.dynamics.BodyFixture;
+    import org.dyn4j.dynamics.World;
+    import org.dyn4j.geometry.Circle;
+    import org.dyn4j.geometry.MassType;
+    import org.dyn4j.geometry.Rectangle;
+    
+    import com.jme3.app.SimpleApplication;
+    import com.jme3.light.DirectionalLight;
+    import com.jme3.material.Material;
+    import com.jme3.material.RenderState.BlendMode;
+    import com.jme3.math.ColorRGBA;
+    import com.jme3.math.Vector2f;
+    import com.jme3.math.Vector3f;
+    import com.jme3.scene.Geometry;
+    import com.jme3.scene.Node;
+    import com.jme3.scene.shape.Quad;
+    import com.jme3.texture.Texture;
+    import com.jme3.texture.Texture.WrapMode;
+    
+    /**
+     * 演示2D物理
+     * 
+     * @author yanmaoyuan
+     *
+     */
+    public class TestDyn4j2D extends SimpleApplication {
+    
+        // Dyn4j的物理世界
+        private World world = new World();
+    
+        @Override
+        public void simpleInitApp() {
+            // 重置摄像机参数
+            resetCamera();
+    
+            // 背景色改成白色
+            viewPort.setBackgroundColor(ColorRGBA.White);
+    
+            // 添加光源
+            rootNode.addLight(new DirectionalLight(new Vector3f(-1, -2, -3).normalizeLocal()));
+    
+            makeFloor();
+    
+            makeCircle();
+    
+            makeRectangle();
+        }
+    
+        /**
+         * 将摄像机改变为平行模式，并调整分辨率。
+         */
+        private void resetCamera() {
+            /**
+             * 改变摄像机的分辨率。
+             */
+            // 摄像机原分辨率
+            float width = cam.getWidth();
+            float height = cam.getHeight();
+    
+            // 调整后的宽度
+            float w = 10;
+            // 调整后的高度
+            float h = w * height / width;
+    
+            // 画面边框离到中心的距离
+            float right = w / 2;// 右
+            float left = -right;// 左
+            float top = h / 2; // 上
+            float bottom = -top;// 下
+    
+            cam.setFrustum(-1000, 1000, left, right, top, bottom);
+    
+            cam.setParallelProjection(true);// 开启平行投影模式
+    
+            cam.setLocation(new Vector3f(0, 2, 0));
+            cam.lookAtDirection(new Vector3f(0, 0, -1), Vector3f.UNIT_Y);
+        }
+    
+        /**
+         * 建造一个固定的“地板”
+         */
+        private void makeFloor() {
+            // 矩形的高和宽
+            float width = 8f;
+            float height = 0.3f;
+    
+            // 刚体
+            Body body = new Body();
+            body.addFixture(new Rectangle(width, height));// 碰撞形状
+            body.setMass(MassType.INFINITE);// 质量无穷大
+    
+            world.addBody(body);
+    
+            // 纹理贴图
+            Texture tex = assetManager.loadTexture("Textures/Terrain/BrickWall/BrickWall.jpg");
+            tex.setWrap(WrapMode.Repeat);
+            // 材质
+            Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat.setTexture("ColorMap", tex);
+    
+            // 几何体
+            Quad quad = new Quad(width, height);
+            quad.scaleTextureCoordinates(new Vector2f(width, height));
+            Geometry geom = new Geometry("floor", quad);
+            geom.setMaterial(mat);
+    
+            // 使用辅助节点，用于调整模型的相对位置
+            Node node = new Node("Floor");
+            node.addControl(new BodyControl(body));
+    
+            node.attachChild(geom);
+            geom.setLocalTranslation(-width / 2, -height / 2, 0);
+    
+            rootNode.attachChild(node);
+        }
+    
+        /**
+         * 制造一个圆形
+         */
+        private void makeCircle() {
+            // 半径
+            float radius = 0.123f;
+    
+            // 刚体
+            Body body = new Body();
+    
+            // 碰撞形状
+            BodyFixture fixture = body.addFixture(new Circle(radius));
+            fixture.setRestitution(0.7);// 弹性
+    
+            body.setMass(MassType.NORMAL);// 普通质量
+            body.translate(-5, 1.5);// 位置坐标
+            body.setLinearVelocity(8, 5);// 线速度
+            body.setLinearDamping(0.05);// 阻尼
+    
+            world.addBody(body);
+    
+            // 纹理贴图
+            Texture tex = assetManager.loadTexture("Textures/Dyn4j/Samples/Basketball.png");
+            tex.setWrap(WrapMode.Repeat);
+            // 材质
+            Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat.setTexture("ColorMap", tex);
+            mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+    
+            // 几何体
+            Quad quad = new Quad(radius * 2, radius * 2);
+            Geometry geom = new Geometry("body", quad);
+            geom.setMaterial(mat);
+    
+            // 辅助节点
+            Node node = new Node("Ball");
+            node.addControl(new BodyControl(body));
+    
+            // 调整相对位置。
+            node.attachChild(geom);
+            geom.setLocalTranslation(-radius, -radius, 0);
+    
+            rootNode.attachChild(node);
+        }
+    
+        /**
+         * 制造矩形木板
+         */
+        private void makeRectangle() {
+            float width = 0.3f;
+            float height = 0.3f;
+    
+            // 纹理贴图
+            Texture tex = assetManager.loadTexture("Textures/Dyn4j/Samples/Crate.png");
+            tex.setWrap(WrapMode.Repeat);
+            // 材质
+            Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat.setTexture("ColorMap", tex);
+    
+            // 网格
+            Quad quad = new Quad(width, height);
+    
+            // 生成10个木板，从半场开始，间隔一米摆放。
+            for (int i = 0; i < 10; i++) {
+                // 刚体
+                Body body = new Body();
+                // 碰撞形状
+                body.addFixture(new Rectangle(width, height));
+                body.setMass(MassType.NORMAL);
+                body.translate(3, height / 2 + 0.2f + i * height);// 设置位置
+    
+                world.addBody(body);
+    
+                // 几何体
+                Geometry geom = new Geometry("body", quad);
+                geom.setMaterial(mat);
+    
+                Node node = new Node("Box");
+                node.addControl(new BodyControl(body));
+    
+                node.attachChild(geom);
+                geom.setLocalTranslation(-width / 2, -height / 2, 0);
+    
+                rootNode.attachChild(node);
+            }
+        }
+    
+        @Override
+        public void simpleUpdate(float tpf) {
+            // 更新Dyn4j物理世界
+            world.update(tpf);
+        }
+    
+        public static void main(String[] args) {
+            TestDyn4j2D app = new TestDyn4j2D();
+            app.start();
+        }
+    
+    }
+
+
+效果如下：
+
+![飞起的小球](/content/images/2017/06/FlyingBall.png)
+
+![篮球击垮了木箱](/content/images/2017/06/Crash.png)
+
+### 例七
+
+在了解了2D摄像机、2D物理引擎之后，我准备了一个投篮小游戏的例子。通过鼠标拖拽，控制投篮的方向和力量，视图把它扔到篮筐里。
+
+![投篮小游戏](/content/images/2017/06/PlayBasketball.png)
+
+源码：[投篮小游戏](https://github.com/jmecn/jME3Tutorials/tree/master/src/main/java/net/jmecn/physics2d/basket)
+
+虽然我称其为一个“游戏”，但实质上它只是一个demo，用于进一步演示dyn4j在jME3中的应用。
+
+如果你对dyn4j物理引擎感兴趣，建议去看看它官网提供的例子，前文中已经全部列出来了。
