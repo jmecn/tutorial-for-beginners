@@ -660,7 +660,7 @@ Context中可以有多个音源，而且Context负责播放这些音源。AudioN
 ![Lemur音乐播放器](/content/images/2017/05/LemurMusicPlayer.png)
 
 源代码：
-[net.jmecn.lemur.MusicPlayer.java](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/lemur/MusicPlayer.java)
+[net.jmecn.lemur.MusicPlayer.java](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/lemur/MusicPlayer.java)
 
 对比我做的这个渣渣，jME3官方社区的用户@Tryder直接把我秒了。
 ![CD_MusicPlayer_Dev](/content/images/2017/05/3e26652f4a_690x388.png)

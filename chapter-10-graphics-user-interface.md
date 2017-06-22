@@ -1397,15 +1397,15 @@ Lemur还非常贴心地提供了大量样例代码供开发者学习。
 
 * [com.simsilica.lemur.demo.BasicDemo](https://github.com/jMonkeyEngine-Contributions/Lemur/blob/master/src/main/java/com/simsilica/lemur/demo/BasicDemo.java) 这是`lemur.jar`中自带的Demo，演示了Lemur的核心功能。
 * [com.simsilica.lemur.demo.ProtoDemo](https://github.com/jMonkeyEngine-Contributions/Lemur/blob/master/extensions/LemurProto/src/main/java/com/simsilica/lemur/demo/ProtoDemo.java) 这是`lemur-proto.jar`中自带的Demo，演示了一些试验GUI元素的功能。
-* [Demos](https://github.com/jMonkeyEngine-Contributions/Lemur/tree/master/examples/demos/src/main/java/demo) 这个Demo项目演示了一些常用GUI元素的用法。
-   MainMenuState 主菜单
-   OptionPanelState 对话框
-   PopupPanelDemoState 弹出菜单
-   TextEntryDemoState 文本框
-   FormattedTextEntryDemoState 格式化文本框
-   WordWarpDemoState 文字自动换行
-   DragAndDropDemoState 拖拽
-   ListBoxDemoState 列表框
+* [Demos](https://github.com/jMonkeyEngine-Contributions/Lemur/tree/master/examples/demos/src/main/java/demo) 这个Demo项目演示了一些常用GUI元素的用法。（
+   MainMenuState 主菜单、
+   OptionPanelState 对话框、
+   PopupPanelDemoState 弹出菜单、
+   TextEntryDemoState 文本框、
+   FormattedTextEntryDemoState 格式化文本框、
+   WordWarpDemoState 文字自动换行、
+   DragAndDropDemoState 拖拽、
+   ListBoxDemoState 列表框）
 * [LemurGems](https://github.com/jMonkeyEngine-Contributions/Lemur/blob/master/examples/LemurGems) 这个Demo项目演示了一些更加复杂的GUI，例如在3D场景中的物体“头上”添加一个“血条”。
 
 #### FAQ
