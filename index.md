@@ -100,7 +100,7 @@ jME3官方网站：
 
 [第八章：场景图](chapter-8-scene-graph)
 
-![场景图](/content/images/2017/04/SceneGraph.svg)
+![场景图](/content/images/2017/04/SceneGraph.png)
 
 * 8.1 概念
 * 8.2 实例：HelloNode
@@ -145,7 +145,7 @@ jME3官方网站：
 
 [第十三章：控制游戏逻辑](chapter-13-controlling-game-logic)
 
-![AppState生命周期](/content/images/2017/06/AppState-Lift-Cycle.svg)
+![AppState生命周期](/content/images/2017/06/AppState-Life-Cycle.png)
 
 * 13.1 导读：游戏主循环
 * 13.2 jME3的主循环
@@ -184,10 +184,12 @@ jME3官方网站：
 
 [第十七章：户外场景](chapter-17-outdoor-scene)
 
-* 17.1 户外元素
-* 17.2 天空
-* 17.3 地形
-* 17.4 海洋
+![户外场景](/content/images/2017/06/outscene.png)
+
+17.1 天空
+17.2 水面
+17.3 地形
+17.4 实例：户外场景
 
 ## 附录
 1. [jME3的历史](appendix-1-jme3-history)

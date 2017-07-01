@@ -14,10 +14,10 @@
 先定义一个简单的游戏引擎接口，声明游戏的基本生命周期。
 
 	package net.jmecn.logic;
-	
+
 	/**
 	 * 一个简单的游戏引擎接口
-	 * 
+	 *
 	 * @author yanmaoyuan
 	 *
 	 */
@@ -35,54 +35,54 @@
 然后定义一个抽象的游戏`Engine`，用于驱动游戏主循环。
 
 	package net.jmecn.logic;
-	
+
 	/**
 	 * 抽象游戏引擎，实现了游戏的主循环。
-	 * 
+	 *
 	 * @author yanmaoyuan
 	 *
 	 */
 	public abstract class Engine implements IGameEngine {
-	
+
 		protected boolean running = false;
 		protected boolean pause = false;
-	
+
 		// 开始游戏
 		public void start() {
 			if (running)
 				return;
-			
+
 			running = true;
 			pause = false;
-			
+
 			// 启动主循环
 			loop();
 		}
-		
+
 		// 暂停游戏
 		public void pause(boolean pause) {
 			this.pause = pause;
 		}
-		
+
 		// 主循环
 		private void loop() {
 			init(); // 初始化整个体系，框架、图形、声音等等
-			
+
 			while(running) {
-				
+
 				// 暂停游戏
 				if (pause) {
 					return;
 				}
-				
+
 				update();
-				
+
 				render();
 			}
-			
+
 			clear(); // 清理资源、关闭各种接口等
 		}
-	
+
 		// 停止游戏
 		public void stop() {
 			running = false;
@@ -93,38 +93,38 @@
 主循环每次执行的时候，都会调用指定好的函数来执行相应的工作，比如在上面代码中我们设置 `update()` 来处理游戏逻辑，设置 `render()` 来绘制游戏当前的画面。比如下面这个例子
 
 	package net.jmecn.logic;
-	
+
 	/**
 	 * 实现游戏逻辑
-	 * 
+	 *
 	 * @author yanmaoyuan
 	 *
 	 */
 	public class MyGame extends Engine {
-	
+
 		float x = 0;
-		
+
 		@Override
 		public void init() {}
-		
+
 		@Override
 		public void update() {
 			x += 1;
 		}
-	
+
 		@Override
 		public void render() {
 			// TODO 根据x坐标绘制玩家
 		}
-	
+
 		@Override
 		public void clear() {}
-	
+
 		public static void main(String[] args) {
 			MyGame game = new MyGame();
 			game.start();
 		}
-	
+
 	}
 
 
@@ -143,10 +143,10 @@
 首先，接口中的`update()`方法变成了`update(float deltatime)`
 
 	package net.jmecn.logic;
-	
+
 	/**
 	 * 一个简单的游戏引擎接口
-	 * 
+	 *
 	 * @author yanmaoyuan
 	 *
 	 */
@@ -171,24 +171,24 @@
 		long currentTime = System.nanoTime();
 		long lastTime = 0;
 		long deltaTime = 0;
-		
+
 		init(); // 初始化整个体系，框架、图形、声音等等
-		
+
 		while(running) {
 			lastTime = currentTime;
 			currentTime = System.nanoTime();
 			deltaTime = currentTime - lastTime;
-		    
+
 			// 暂停游戏
 			if (pause) {
 				return;
 			}
-			
+
 			update(deltaTime * 0.0000000001f);
-			
+
 			render();
 		}
-		
+
 		clear(); // 清理资源、关闭各种接口等
 	}
 
@@ -214,27 +214,27 @@ deltaTime的时间单位是纳秒，游戏中一般使用秒作为时间单位�
 有一些语言或者框架提供了按照时钟触发的方式，可以设定固定的触发时间间隔，比如下面的例子：
 
 	package net.jmecn.logic;
-	
+
 	import java.util.Timer;
 	import java.util.TimerTask;
-	
+
 	/**
 	 * 抽象游戏引擎，实现了游戏的主循环。
-	 * 
+	 *
 	 * @author yanmaoyuan
 	 *
 	 */
 	public abstract class Engine implements IGameEngine {
-	
+
 		protected boolean pause = false;
-		
+
 		Timer timer;
 		TimerTask task;
-		
+
 		// 开始游戏
 		public void start() {
 			init(); // 初始化整个体系，框架、图形、声音等等
-	
+
 			// 定时器
 			timer = new Timer();
 			task = new TimerTask() {
@@ -243,30 +243,30 @@ deltaTime的时间单位是纳秒，游戏中一般使用秒作为时间单位�
 					if (pause) {
 						return;
 					}
-					
+
 					update();
 					render();
 				}
 			};
-			
+
 			// 设定 1/30 秒触发一次，执行 主循环
 			long period = (long) (1000 / 30f);
 			timer.scheduleAtFixedRate(task, 0, period);
 		}
-		
+
 		// 暂停游戏
 		public void pause(boolean pause) {
 			this.pause = pause;
 		}
-	
+
 		// 停止游戏
 		public void stop() {
 			task.cancel();// 退出任务
 			task = null;
-			
+
 			timer.cancel();
 			timer = null;
-			
+
 			clear(); // 清理资源、关闭各种接口等
 		}
 	}
@@ -288,7 +288,7 @@ jME3使用的是[基于时间的主循环](#基于时间的主循环)，`jme3-co
 
 当你继承SimpleApplication类后，就自动获得了它提供的主循环，利用它我们可以实现自己的游戏逻辑，比如遥控NPC、处理游戏事件、响应用户输入等。
 
-SimpleApplication在后台做了很多事情，我们曾在本教程第二章“jME3基本概念”的[生命周期](http://blog.jmecn.net/chapter-2-basic-concepts/#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F)章节简单介绍过：
+SimpleApplication在后台做了很多事情，我们曾在本教程第二章“jME3基本概念”的[生命周期](http://www.jmecn.net/tutorial-for-beginners/chapter-2-basic-concepts/#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F)章节简单介绍过：
 
 * 执行 `initialize()` 方法，初始化`显示系统`、`场景图`、`摄像机`、`输入系统`、`音效系统`、`资源管理系统`、`应用状态机`等一大堆重要的内容。
  * initialize() 方法只在程序启动时执行一次。
@@ -314,7 +314,7 @@ SimpleApplication在后台做了很多事情，我们曾在本教程第二章“
 下面是一个例子：
 
     package net.jmecn.logic;
-    
+
     import com.jme3.app.SimpleApplication;
     import com.jme3.light.DirectionalLight;
     import com.jme3.material.Material;
@@ -324,48 +324,48 @@ SimpleApplication在后台做了很多事情，我们曾在本教程第二章“
     import com.jme3.scene.Geometry;
     import com.jme3.scene.Spatial;
     import com.jme3.scene.shape.Box;
-    
+
     /**
      * 主循环
-     * 
+     *
      * @author yanmaoyuan
      *
      */
     public class HelloLoop extends SimpleApplication {
-    
+
         // 旋转的物体
         private Spatial spatial;
         // 旋转速度：每秒180°
         private float rotateSpeed = FastMath.PI;
-    
+
         @Override
         public void simpleInitApp() {
             cam.setLocation(new Vector3f(3.3435764f, 3.7595856f, 6.611723f));
             cam.setRotation(new Quaternion(-0.05573249f, 0.9440857f, -0.23910178f, -0.22006002f));
-    
+
             // 创建一个方块
             Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
             spatial = new Geometry("Box", new Box(1, 1, 1));
             spatial.setMaterial(mat);
-    
+
             rootNode.attachChild(spatial);
-    
+
             // 添加光源
             rootNode.addLight(new DirectionalLight(new Vector3f(-1, -2, -3)));
         }
-    
+
         @Override
         public void simpleUpdate(float tpf) {
             // 绕Y轴以固定速率旋转
             spatial.rotate(0, tpf * rotateSpeed, 0);
         }
-    
+
         public static void main(String[] args) {
             // 启动
             HelloLoop app = new HelloLoop();
             app.start();
         }
-    
+
     }
 
 这个程序的作用，是创建一个方块，并让它以每秒180°的速度绕Y轴旋转。
@@ -420,7 +420,7 @@ AppState是jME3的一个重要接口，主要用于处理全局的游戏机制�
 
 AppState的生命周期有三个主要阶段：初始化（initialize）、主循环（update）、清理（cleanup）。
 
-![AppState life cycle](/content/images/2017/06/AppState-Lift-Cycle.svg)
+![AppState life cycle](/content/images/2017/06/AppState-Life-Cycle.png)
 
 `AppStateManager` 用于管理所有的 AppState 实例，通过 下面两行代码，可以把一个 AppState 实例添加到系统的处理队列中，或者移除一个 AppState对象。
 
@@ -483,26 +483,26 @@ AppState的生命历程是这样的：
 HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序，并把上述3个 AppState 交给 AppStateManager 管理。
 
     package net.jmecn;
-    
+
     import com.jme3.app.SimpleApplication;
-    
+
     import net.jmecn.logic.InputAppState;
     import net.jmecn.logic.LightAppState;
     import net.jmecn.logic.VisualAppState;
-    
+
     /**
      * 演示AppState的作用
-     * 
+     *
      * @author yanmaoyuan
      *
      */
     public class HelloAppState extends SimpleApplication {
-    
+
         public static void main(String[] args) {
             HelloAppState app = new HelloAppState();
             app.start();
         }
-        
+
         @Override
         public void simpleInitApp() {
             stateManager.attach(new LightAppState());
@@ -513,7 +513,7 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
             cam.setLocation(new Vector3f(2.4611378f, 2.8119917f, 9.150583f));
             cam.setRotation(new Quaternion(-0.020502187f, 0.97873497f, -0.16252096f, -0.1234684f));
         }
-    
+
     }
 
 比起我们以前写的代码，是不是整洁多了？
@@ -521,7 +521,7 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
 除了在 simpleInitApp() 方法中初始化AppState以外，还有另一种更优雅的写法：调用父类构造方法，设置所需的 AppState。
 
     package net.jmecn;
-    
+
     import com.jme3.app.DebugKeysAppState;
     import com.jme3.app.FlyCamAppState;
     import com.jme3.app.SimpleApplication;
@@ -529,24 +529,24 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
     import com.jme3.audio.AudioListenerState;
     import com.jme3.math.Quaternion;
     import com.jme3.math.Vector3f;
-    
+
     import net.jmecn.logic.InputAppState;
     import net.jmecn.logic.LightAppState;
     import net.jmecn.logic.VisualAppState;
-    
+
     /**
      * SimpleApplication的最佳形式
-     * 
+     *
      * @author yanmaoyuan
      *
      */
     public class HelloAppState2 extends SimpleApplication {
-    
+
         public static void main(String[] args) {
             HelloAppState2 app = new HelloAppState2();
             app.start();
         }
-    
+
         /**
          * 在构造方法中初始化AppState
          */
@@ -554,14 +554,14 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
             super(new StatsAppState(), new FlyCamAppState(), new AudioListenerState(), new DebugKeysAppState(),
                     new LightAppState(), new VisualAppState(), new InputAppState());
         }
-    
+
         @Override
         public void simpleInitApp() {
             // 初始化摄像机
             cam.setLocation(new Vector3f(2.4611378f, 2.8119917f, 9.150583f));
             cam.setRotation(new Quaternion(-0.020502187f, 0.97873497f, -0.16252096f, -0.1234684f));
         }
-    
+
     }
 
 这里比上面多了4个AppState，它们是jME3系统自带的AppState：
@@ -578,7 +578,7 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
 注意，在 VisualAppState 中，我没有直接使用 SimpleApplication 中的 rootNode，而是又定义了一个 sceneNode。子场景中的所有物体都被添加到 sceneNode中，这样只需要一行代码就可以把整个子场景添加到 rootNode 中，同样也可以用一行代码就把整个子场景移除掉。
 
     package net.jmecn.logic;
-    
+
     import com.jme3.app.Application;
     import com.jme3.app.SimpleApplication;
     import com.jme3.app.state.AppState;
@@ -592,39 +592,39 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
     import com.jme3.scene.Mesh;
     import com.jme3.scene.Node;
     import com.jme3.scene.shape.Box;
-    
+
     /**
      * 管理自场景的AppState
-     * 
+     *
      * @author yanmaoyuan
      *
      */
     public class VisualAppState implements AppState {
-        
+
         private boolean initialized = false;
         private boolean enabled = true;
-    
+
         /**
          * 创建一个独立的根节点，便于管理子场景。
          */
         private Node sceneNode = new Node("MyScene");
-        
+
         private Geometry cube = null;
-        
+
         /**
          * 对于那些我们用得上的系统对象，保存一份对象的引用。
          */
         private SimpleApplication simpleApp;
         private AssetManager assetManager;
-        
+
         @Override
         public void stateAttached(AppStateManager stateManager) {}
-        
+
         @Override
         public void initialize(AppStateManager stateManager, Application app) {
             this.simpleApp = (SimpleApplication) app;
             this.assetManager = app.getAssetManager();
-            
+
             // 创建一个方块
             Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
             mat.setColor("Diffuse", ColorRGBA.Red);
@@ -632,70 +632,70 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
             mat.setColor("Specular", ColorRGBA.Black);
             mat.setFloat("Shininess", 1);
             mat.setBoolean("UseMaterialColors", true);
-            
+
             Mesh mesh = new Box(1, 1, 1);
-            
+
             cube = new Geometry("Cube", mesh);
             cube.setMaterial(mat);
-            
+
             // 将方块添加到我们这个场景中。
             sceneNode.attachChild(cube);
-            
+
             // 初始化完毕
             initialized = true;
-            
+
             if (enabled)
                 simpleApp.getRootNode().attachChild(sceneNode);
         }
-    
+
         @Override
         public boolean isInitialized() {
             return initialized;
         }
-    
+
         @Override
         public void setEnabled(boolean active) {
             if ( this.enabled == active )
                 return;
             this.enabled = active;
-            
+
             if (!initialized)
                 return;
-            
+
             if (enabled) {
                 simpleApp.getRootNode().attachChild(sceneNode);
             } else {
                 sceneNode.removeFromParent();
             }
         }
-    
+
         @Override
         public boolean isEnabled() {
             return enabled;
         }
-        
+
         @Override
         public void update(float tpf) {
             cube.rotate(0, tpf * FastMath.PI, 0);
         }
-        
+
         @Override
         public void render(RenderManager rm) {}
-        
+
         @Override
         public void postRender() {}
-    
+
         @Override
         public void stateDetached(AppStateManager stateManager) {}
-    
+
         @Override
         public void cleanup() {
             if (enabled)
                 sceneNode.removeFromParent();
-            
+
             initialized = false;
         }
-    
+
     }
 
 #### LightAppState
@@ -703,7 +703,7 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
 下面是 LightAppState.java 的代码。仅仅是在 initialize() 中初始化了光源，没有什么特别的。
 
     package net.jmecn.logic;
-    
+
     import com.jme3.app.Application;
     import com.jme3.app.SimpleApplication;
     import com.jme3.app.state.AppState;
@@ -714,113 +714,113 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
     import com.jme3.math.Vector3f;
     import com.jme3.renderer.RenderManager;
     import com.jme3.scene.Node;
-    
+
     public class LightAppState implements AppState {
-        
+
         private boolean initialized = false;
         private boolean enabled = true;
-        
+
         // 点光源
         private Vector3f lightPos;
         private ColorRGBA pointLightColor;
         private PointLight pointLight;
-        
+
         // 环境光
         private ColorRGBA ambientLightColor = new ColorRGBA(0.2f, 0.2f, 0.2f, 1f);
         private AmbientLight ambientLight;
-        
+
         // 背景色
         private ColorRGBA bgColor = new ColorRGBA(0.7f, 0.8f, 0.85f, 1f);
-        
+
         /**
          * 灯光应该引用到整个场景中，所以需要保存SimpleApplication中的根节点。
          */
         private Node rootNode;
-        
+
         @Override
         public void initialize(AppStateManager stateManager, Application app) {
             SimpleApplication simpleApp = (SimpleApplication) app;
             this.rootNode = simpleApp.getRootNode();
-            
+
             // 创建光源
             lightPos = new Vector3f(1, 2, 3);
             pointLightColor = new ColorRGBA(0.8f, 0.8f, 0.0f, 1f);
             pointLight = new PointLight(lightPos, pointLightColor);
-            
+
             ambientLightColor = new ColorRGBA(0.2f, 0.2f, 0.2f, 1f);
             ambientLight = new AmbientLight(ambientLightColor);
-    
+
             // 设置背景色，在关灯之后你依然能看到场景中漆黑的物体。
             app.getViewPort().setBackgroundColor(bgColor);
-            
+
             // 初始化完毕
             initialized = true;
-            
+
             if (enabled)
                 turnOn();
         }
-    
+
         // 开灯
         public void turnOn() {
             rootNode.addLight(pointLight);
             rootNode.addLight(ambientLight);
         }
-        
+
         // 关灯
         public void turnOff() {
             rootNode.removeLight(pointLight);
             rootNode.removeLight(ambientLight);
         }
-        
+
         @Override
         public boolean isInitialized() {
             return initialized;
         }
-    
+
         @Override
         public void setEnabled(boolean active) {
             if ( this.enabled == active )
                 return;
             this.enabled = active;
-            
+
             if (!initialized)
                 return;
-            
+
             if (enabled) {
                 turnOn();
             } else {
                 turnOff();
             }
         }
-    
+
         @Override
         public boolean isEnabled() {
             return enabled;
         }
-    
+
         @Override
         public void stateAttached(AppStateManager stateManager) {}
-    
+
         @Override
         public void stateDetached(AppStateManager stateManager) {}
-    
+
         @Override
         public void update(float tpf) {}
-    
+
         @Override
         public void render(RenderManager rm) {}
-    
+
         @Override
         public void postRender() {}
-    
+
         @Override
         public void cleanup() {
             if (enabled)
                 turnOff();
-            
+
             initialized = false;
         }
-    
+
     }
 
 #### InputAppState
@@ -828,7 +828,7 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
 下面是 InputAppState.java 的代码。
 
     package net.jmecn.logic;
-    
+
     import com.jme3.app.Application;
     import com.jme3.app.state.AppState;
     import com.jme3.app.state.AppStateManager;
@@ -838,72 +838,72 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
     import com.jme3.input.controls.KeyTrigger;
     import com.jme3.input.controls.Trigger;
     import com.jme3.renderer.RenderManager;
-    
+
     /**
      * 输入模块
      * @author yanmoayuan
      *
      */
     public class InputAppState implements AppState, ActionListener {
-    
+
         // 电灯开关
         public final static String SWITCH_LIGHT = "switch_light";
         public final static Trigger TRIGGER_KEY_SPACE = new KeyTrigger(KeyInput.KEY_SPACE);
-        
+
         // 显示/隐藏子场景
         public final static String TOGGLE_SUBSCENE = "toggle_subscene";
         public final static Trigger TRIGGER_KEY_TAB = new KeyTrigger(KeyInput.KEY_TAB);
-        
+
         private boolean initialized = false;
         private boolean enabled = true;
-        
+
         /**
          * 保存我们所需要的系统对象
          */
         private InputManager inputManager;
         private AppStateManager stateManager;
-        
+
         @Override
         public void initialize(AppStateManager stateManager, Application app) {
             this.stateManager = stateManager;
             this.inputManager = app.getInputManager();
-            
+
             initialized = true;
-            
+
             if (enabled)
                 addInputs();
         }
-    
+
         /**
          * 添加输入
          */
         public void addInputs() {
             inputManager.addMapping(SWITCH_LIGHT, TRIGGER_KEY_SPACE);
             inputManager.addMapping(TOGGLE_SUBSCENE, TRIGGER_KEY_TAB);
-            
+
             inputManager.addListener(this, SWITCH_LIGHT, TOGGLE_SUBSCENE);
         }
-        
+
         /**
          * 移除输入
          */
         public void removeInputs() {
             inputManager.deleteTrigger(SWITCH_LIGHT, TRIGGER_KEY_SPACE);
             inputManager.deleteTrigger(TOGGLE_SUBSCENE, TRIGGER_KEY_TAB);
-            
-            inputManager.removeListener(this); 
+
+            inputManager.removeListener(this);
         }
-    
+
         @Override
         public void onAction(String name, boolean isPressed, float tpf) {
             if (isPressed) {
                 if (SWITCH_LIGHT.equals(name)) {
-                    
+
                     // 开关灯
                     LightAppState light = stateManager.getState(LightAppState.class);
                     if (light != null)
                         light.setEnabled(!light.isEnabled());
-                    
+
                 } else if (TOGGLE_SUBSCENE.equals(name)) {
                     // 显示/隐藏场景
                     VisualAppState visual = stateManager.getState(VisualAppState.class);
@@ -912,56 +912,56 @@ HelloAppState.java 是我们的主类，现在它的作用仅仅是启动程序�
                 }
             }
         }
-        
+
         @Override
         public boolean isInitialized() {
             return initialized;
         }
-    
+
         @Override
         public void setEnabled(boolean active) {
             if ( this.enabled == active )
                 return;
             this.enabled = active;
-            
+
             if (!initialized)
                 return;
-            
+
             if (enabled) {
                 addInputs();
             } else {
                 removeInputs();
             }
         }
-    
+
         @Override
         public boolean isEnabled() {
             return enabled;
         }
-    
+
         @Override
         public void stateAttached(AppStateManager stateManager) {}
-    
+
         @Override
         public void stateDetached(AppStateManager stateManager) {}
-    
+
         @Override
         public void update(float tpf) {}
-    
+
         @Override
         public void render(RenderManager rm) {}
-    
+
         @Override
         public void postRender() {}
-    
+
         @Override
         public void cleanup() {
             if (enabled)
                 removeInputs();
-    
+
             initialized = false;
         }
-    
+
     }
 
 ### 最佳实践
@@ -980,7 +980,7 @@ BaseAppState是最好用的一个，而AbstractAppState更加简单粗暴。我�
 下面是我常用的一个AxisAppState，基于BaseAppState实现。它的作用是在场景的中央显示一个参考坐标系，按<kbd>F4</kbd> 可以显示/隐藏坐标系。
 
     package net.jmecn.state;
-    
+
     import com.jme3.app.Application;
     import com.jme3.app.SimpleApplication;
     import com.jme3.app.state.BaseAppState;
@@ -997,25 +997,25 @@ BaseAppState是最好用的一个，而AbstractAppState更加简单粗暴。我�
     import com.jme3.scene.Node;
     import com.jme3.scene.debug.Arrow;
     import com.jme3.scene.debug.Grid;
-    
+
     /**
      * 坐标系
-     * 
+     *
      * @author yanmaoyuan
      *
      */
     public class AxisAppState extends BaseAppState implements ActionListener {
-    
+
         public final static String TOGGLE_AXIS = "toggle_axis";
-    
+
         private AssetManager assetManager;
-    
+
         private Node rootNode = new Node("AxisRoot");
-    
+
         @Override
         protected void initialize(Application app) {
             assetManager = app.getAssetManager();
-    
+
             // 网格
             Geometry grid = new Geometry("Grid", new Grid(21, 21, 1));
             Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
@@ -1023,53 +1023,53 @@ BaseAppState是最好用的一个，而AbstractAppState更加简单粗暴。我�
             grid.setMaterial(mat);
             grid.center().move(0, 0, 0);
             grid.setShadowMode(ShadowMode.Off);
-    
+
             rootNode.attachChild(grid);
-    
+
             // 坐标
             createArrow("X", Vector3f.UNIT_X.mult(10), ColorRGBA.Red);
             createArrow("Y", Vector3f.UNIT_Y.mult(10), ColorRGBA.Green);
             createArrow("Z", Vector3f.UNIT_Z.mult(10), ColorRGBA.Blue);
-    
+
             toggleAxis();
         }
-    
+
         @Override
         protected void cleanup(Application app) {
         }
-    
+
         @Override
         protected void onEnable() {
             SimpleApplication simpleApp = (SimpleApplication) getApplication();
             simpleApp.getRootNode().attachChild(rootNode);
-    
+
             // 注册按键
             InputManager inputManager = getApplication().getInputManager();
             inputManager.addMapping(TOGGLE_AXIS, new KeyTrigger(KeyInput.KEY_F4));
             inputManager.addListener(this, TOGGLE_AXIS);
         }
-    
+
         @Override
         protected void onDisable() {
             rootNode.removeFromParent();
-    
+
             // 移除按键
             InputManager inputManager = getApplication().getInputManager();
             inputManager.removeListener(this);
             inputManager.deleteMapping(TOGGLE_AXIS);
-    
+
         }
-    
+
         @Override
         public void onAction(String name, boolean keyPressed, float tpf) {
             if (name.equals(TOGGLE_AXIS) && keyPressed) {
                 toggleAxis();
             }
         }
-    
+
         /**
          * 坐标轴开/关
-         * 
+         *
          * @return
          */
         public boolean toggleAxis() {
@@ -1082,10 +1082,10 @@ BaseAppState是最好用的一个，而AbstractAppState更加简单粗暴。我�
                 return true;
             }
         }
-    
+
         /**
          * 创建一个箭头
-         * 
+         *
          * @param vec3
          *            箭头向量
          * @param color
@@ -1097,12 +1097,12 @@ BaseAppState是最好用的一个，而AbstractAppState更加简单粗暴。我�
             mat.setColor("Color", color);
             mat.getAdditionalRenderState().setLineWidth(3f);
             mat.getAdditionalRenderState().setWireframe(true);
-    
+
             // 创建几何物体，应用箭头网格。
             Geometry geom = new Geometry("Axis_" + name, new Arrow(vec3));
             geom.setMaterial(mat);
             geom.setShadowMode(ShadowMode.Off);
-    
+
             // 添加到场景中
             rootNode.attachChild(geom);
         }
@@ -1249,9 +1249,9 @@ AppStateManager的 `T getState(Class<T> stateClass)` 方法利用了Java的泛�
 下面是一个简单的自定义控件，它可以让模型绕Y轴以固定速率旋转。注意`update(float tpf)`方法，这是该控件内部的主循环。
 
     package net.jmecn.logic;
-    
+
     import java.io.IOException;
-    
+
     import com.jme3.export.JmeExporter;
     import com.jme3.export.JmeImporter;
     import com.jme3.math.FastMath;
@@ -1259,52 +1259,52 @@ AppStateManager的 `T getState(Class<T> stateClass)` 方法利用了Java的泛�
     import com.jme3.renderer.ViewPort;
     import com.jme3.scene.Spatial;
     import com.jme3.scene.control.Control;
-    
+
     /**
      * 让模型绕Y轴以固定速率旋转
-     * 
+     *
      * @author yanmaoyuan
      *
      */
     public class RotateControl implements Control {
-    
+
         private Spatial spatial;
-    
+
         // 旋转速度：每秒180°
         private float rotateSpeed = FastMath.PI;
-    
+
         public RotateControl() {
             this.rotateSpeed = FastMath.PI;
         }
-    
+
         public RotateControl(float rotateSpeed) {
             this.rotateSpeed = rotateSpeed;
         }
-    
+
         @Override
         public void setSpatial(Spatial spatial) {
             this.spatial = spatial;
         }
-    
+
         @Override
         public void update(float tpf) {
             spatial.rotate(0, tpf * rotateSpeed, 0);
         }
-    
+
         @Override
         public void render(RenderManager rm, ViewPort vp) {
         }
-    
+
         @Override
         public void write(JmeExporter ex) throws IOException {
             throw new IOException("暂不支持");
         }
-    
+
         @Override
         public void read(JmeImporter im) throws IOException {
             throw new IOException("暂不支持");
         }
-    
+
         @Override
         public Control cloneForSpatial(Spatial spatial) {
             RotateControl c = new RotateControl(rotateSpeed);
@@ -1316,7 +1316,7 @@ AppStateManager的 `T getState(Class<T> stateClass)` 方法利用了Java的泛�
 下面这个代码，RotateControl让方块绕Y轴旋转。
 
     package net.jmecn.logic;
-    
+
     import com.jme3.app.SimpleApplication;
     import com.jme3.light.DirectionalLight;
     import com.jme3.material.Material;
@@ -1325,40 +1325,40 @@ AppStateManager的 `T getState(Class<T> stateClass)` 方法利用了Java的泛�
     import com.jme3.math.Vector3f;
     import com.jme3.scene.Geometry;
     import com.jme3.scene.shape.Box;
-    
+
     /**
      * 主循环
-     * 
+     *
      * @author yanmaoyuan
      *
      */
     public class HelloControl extends SimpleApplication {
-    
+
         @Override
         public void simpleInitApp() {
             cam.setLocation(new Vector3f(3.3435764f, 3.7595856f, 6.611723f));
             cam.setRotation(new Quaternion(-0.05573249f, 0.9440857f, -0.23910178f, -0.22006002f));
-    
+
             // 创建一个方块
             Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
             Geometry spatial = new Geometry("Box", new Box(1, 1, 1));
             spatial.setMaterial(mat);
-    
+
             // 添加控件
             spatial.addControl(new RotateControl(FastMath.PI));
-    
+
             rootNode.attachChild(spatial);
-    
+
             // 添加光源
             rootNode.addLight(new DirectionalLight(new Vector3f(-1, -2, -3)));
         }
-    
+
         public static void main(String[] args) {
             // 启动
             HelloControl app = new HelloControl();
             app.start();
         }
-    
+
     }
 
 ### AbstractControl
@@ -1376,49 +1376,49 @@ AbstractControl 中做了很多基础工作，比如保存被绑定的Spatial引
 下例的FloatControl基于AbstractControl，作用是让物体做上下往返运动。
 
     package net.jmecn.logic;
-    
+
     import com.jme3.renderer.RenderManager;
     import com.jme3.renderer.ViewPort;
     import com.jme3.scene.control.AbstractControl;
-    
+
     /**
      * 一个让目标上下浮动的控件
-     * 
+     *
      * @author yanmaoyuan
      *
      */
     public class FloatControl extends AbstractControl {
-    
+
         float tmp = 0;
         boolean raise = true;
-    
+
         float dist;// 上下浮动的距离
         float speed;// 浮动的速度
-    
+
         public FloatControl() {
             this.dist = 0.5f;
             this.speed = 1f;
         }
-    
+
         public FloatControl(float dist, float speed) {
             this.dist = dist;
             this.speed = speed;
         }
-    
+
         @Override
         protected void controlUpdate(float tpf) {
             if (speed == 0)
                 return;
-    
+
             float delta = tpf * speed;
-    
+
             if (tmp < dist && raise) {
                 tmp += delta;
                 spatial.move(0, delta, 0);
             } else {
                 raise = false;
             }
-    
+
             if (tmp > -dist && !raise) {
                 tmp -= delta;
                 spatial.move(0, -delta, 0);
@@ -1426,7 +1426,7 @@ AbstractControl 中做了很多基础工作，比如保存被绑定的Spatial引
                 raise = true;
             }
         }
-    
+
         @Override
         protected void controlRender(RenderManager rm, ViewPort vp) {
         }
@@ -1439,42 +1439,42 @@ AbstractControl 中做了很多基础工作，比如保存被绑定的Spatial引
 下例的MotionControl也不算很复杂，它的作用是让物体朝目标点做直线运动。
 
     package net.jmecn.game;
-    
+
     import com.jme3.math.Vector3f;
     import com.jme3.renderer.RenderManager;
     import com.jme3.renderer.ViewPort;
     import com.jme3.scene.Spatial;
     import com.jme3.scene.control.AbstractControl;
-    
+
     /**
      * 这是一个运动控件，其作用是让模型朝目标点直线运动。
-     * 
+     *
      * @author yanmaoyuan
      *
      */
     public class MotionControl extends AbstractControl {
-        
+
         // 运动速度
         private float walkSpeed = 1.0f;
         private float speedFactor = 1.0f;
-        
+
         // 运动的方向向量
         private Vector3f walkDir;
         // 运动一步的向量
         private Vector3f step;
-        
+
         // 当前位置
         private Vector3f loc;
         // 目标位置
         private Vector3f target;
-    
+
         // 观察者
         private Observer observer;
-    
+
         public MotionControl() {
             this(1.0f);
         }
-        
+
         public MotionControl(float walkSpeed) {
             this.walkSpeed = walkSpeed;
             walkDir = null;
@@ -1482,7 +1482,7 @@ AbstractControl 中做了很多基础工作，比如保存被绑定的Spatial引
             loc = new Vector3f();
             step = new Vector3f();
         }
-        
+
         /**
          * 设置运动速度
          * @param walkSpeed
@@ -1490,7 +1490,7 @@ AbstractControl 中做了很多基础工作，比如保存被绑定的Spatial引
         public void setWalkSpeed(float walkSpeed) {
             this.speedFactor = walkSpeed;
         }
-        
+
         /**
          * 设置观察者
          * @param observer
@@ -1498,80 +1498,80 @@ AbstractControl 中做了很多基础工作，比如保存被绑定的Spatial引
         public void setObserver(Observer observer) {
             this.observer = observer;
         }
-    
+
         /**
          * 设置目标点
-         * 
+         *
          * @param target
          */
         public void setTarget(Vector3f target) {
             this.target = target;
-    
+
             if (target == null) {
             	walkDir = null;
             	return;
             }
-            
+
             // 当模型面朝目标点
             this.spatial.lookAt(target, Vector3f.UNIT_Y);
-    
+
             // 计算运动方向
             walkDir = target.subtract(loc);
             walkDir.normalizeLocal();
-            
+
         }
-        
+
         @Override
         public void setSpatial(Spatial spatial) {
             super.setSpatial(spatial);
             // 初始化位置
             loc = new Vector3f(spatial.getLocalTranslation());
         }
-    
+
         /**
          * 重写主循环，让这个模型向目标点移动。
          */
         @Override
         protected void controlUpdate(float tpf) {
             if (walkDir != null) {
-    
+
                 // 计算下一步的步长
                 float stepDist = walkSpeed * tpf * speedFactor;
-                
+
                 if (stepDist == 0f) {
                 	return;
                 }
-    
+
                 // 计算离目标点的距离
                 float dist = loc.distance(target);
-    
+
                 if (stepDist < dist) {
                     // 计算位移
                     walkDir.mult(stepDist, step);
                     loc.addLocal(step);
-                    
+
                     spatial.setLocalTranslation(loc);
-                    
+
                 } else {
                     // 可以到达目标点
                     walkDir = null;
-                    
+
                     spatial.setLocalTranslation(target);
                     target = null;
-    
+
                     // 通知观察者，已经抵达目标点了。
                     if (observer != null) {
                     	observer.onReachTarget();
                     }
                 }
-    
+
             }
         }
-    
+
         @Override
         protected void controlRender(RenderManager rm, ViewPort vp) {
         }
-    
+
     }
 
 ### 与Control通信
