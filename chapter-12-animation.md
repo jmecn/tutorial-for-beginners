@@ -53,7 +53,7 @@ jME3游戏引擎只能加载、播放录制好的动画。因此，你必须使�
 
 > Jaime是jME3核心开发者`Nehon`使用Blender制作的3D动画模型，它现在是jme3-testdata模块中的一部分。模型的加载路径为：[Models/Jaime/Jaime.j3o](https://github.com/jMonkeyEngine/jmonkeyengine/tree/master/jme3-testdata/src/main/resources/Models/Jaime)。
 
-> Jaime的原始文件为blender格式，保存在googlecode.com上。我在github上保留了一个备份文件，下载：[Jaime.blend](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/resources/Models/Jaime/Jaime.blend?raw=true)(9.5MB)。
+> Jaime的原始文件为blender格式，保存在googlecode.com上。我在github上保留了一个备份文件，下载：[Jaime.blend](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/resources/Models/Jaime/Jaime.blend?raw=true)(9.5MB)。
 
 ### 设计
 
