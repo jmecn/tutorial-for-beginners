@@ -295,7 +295,7 @@ SimpleApplication在后台做了很多事情，我们曾在本教程第二章“
  * 在 initialize() 方法的最后，会执行我们重载的 `simpleInitApp()` 方法。
  * 由于 initialize() 方法已经把该准备的东西都准备好了，所以我们在 simpleInitApp() 方法中才可以直接使用assetManager、inputManager等重要对象。
 * 循环执行 `update(float tpf)` 方法
- * 1-响应用户输入，执行所有事件监听器中的代码。见[第九章：用户交互](http://www.jmecn.net/tutorial-for-beginners/chapter-9-user-interaction/)
+ * 1-响应用户输入，执行所有事件监听器中的代码。见[第九章：用户交互](http://www.jmecn.net/tutorial-for-beginners/chapter-9-user-interaction)
  * 2-更新游戏状态
   * 2-1 更新全局游戏状态（执行所有 AppState#update() 方法）；
   * 2-2 更新用户自定义游戏逻辑（执行 simpleUpdate() 方法）；
