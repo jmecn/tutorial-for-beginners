@@ -8,7 +8,7 @@ This is a tutorial about how to make games with [jMonkeyEngine3](https://jmonkey
 
 ## 关于
 
-本教程的主要内容是介绍如何使用 jMonkeyEngine 进行游戏开发，旨在帮助初学者快速理解 jMonkeyEngine 中的核心概念。由于作者本人水品有限，文中难以避免出现谬误，如您在阅读过程中发现有不对的地方，请告知本人，我会尽快修正。
+本教程的主要内容是介绍如何使用 jMonkeyEngine 进行游戏开发，旨在帮助初学者快速理解 jMonkeyEngine 中的核心概念。由于作者本人水平有限，文中难以避免出现谬误，如您在阅读过程中发现有不对的地方，请告知本人，我会尽快修正。
 
 jME3官方网站：
 
