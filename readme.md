@@ -1,10 +1,10 @@
 ## About
-This is a tutorial about how to make games with [jMonkeyEngine3](https://jmonkeyengine.org), it's all in Chinese. For English speaker who is reading this document, I sugguest you go to https://jmonkeyengine.github.io/wiki for more information.
+This is a tutorial about how to make games with [jMonkeyEngine3](https://jmonkeyengine.org), it's all in Chinese. For English speaker who is reading this document, I sugguest you go to http://wiki.jmonkeyengine.org for more information.
 
 * Website: http://jmonkeyengine.org/
 * Forum: https://hub.jmonkeyengine.org
 * Github: https://github.com/jMonkeyEngine/jmonkeyengine
-* wiki: https://jmonkeyengine.github.io/wiki
+* wiki: http://wiki.jmonkeyengine.org
 
 ## 关于
 
@@ -15,12 +15,12 @@ jME3官方网站：
 * 官网: http://jmonkeyengine.org/
 * 论坛: https://hub.jmonkeyengine.org
 * Github: https://github.com/jMonkeyEngine/jmonkeyengine
-* Wiki: https://jmonkeyengine.github.io/wiki
+* Wiki: http://wiki.jmonkeyengine.org
 
 中文网站：
 
 * 中文站: http://www.jmecn.net
-* 中文论坛: http://bbs.jmecn.net
+* 作者博客: http://blog.jmecn.net
 * QQ讨论群: 423979787
 * 作者邮箱: 115050813@qq.com
 
