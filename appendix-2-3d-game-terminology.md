@@ -29,7 +29,7 @@ jME环境(Context)为JME3游戏提供了所需的一切，包括：配置管理�
 
 #### 多边形，网格，顶点
 
-![模型(例如此处的海豚)由多边形网格组成](content/images/2016/08/dolphin_mesh.png)
+![模型(例如此处的海豚)由多边形网格组成](/content/images/2016/08/dolphin_mesh.png)
 
 3D场景里大部分的可见物体都是由多边形网格组成的——角色、地形、建筑等等。网格(Mesh)是一种可以表达复杂形状的网状结构。网格的优点是，从数学角度讲足够简单，可以实时处理形状变化，细节上也足够辨认该物体。
 
@@ -81,7 +81,7 @@ jME环境(Context)为JME3游戏提供了所需的一切，包括：配置管理�
 * 你可以用不同的颜色来制造特殊的反射效果，比如金属色泽或彩虹炫色。
 * 无光泽物体的高光颜色是黑色的。
 
-!["tanlglow2"](content/images/2016/08/tanlglow2.png)
+!["tanlglow2"](/content/images/2016/08/tanlglow2.png)
 
 ### 材质：纹理
 
@@ -95,7 +95,7 @@ jME环境(Context)为JME3游戏提供了所需的一切，包括：配置管理�
 
 ##### 颜色贴图/漫反射贴图
 
-![tank_diffuse.jpg](content/images/2016/08/tank_diffuse.jpg)
+![tank_diffuse.jpg](/content/images/2016/08/tank_diffuse.jpg)
 
 * 是一个纯图片文件或程序纹理，用来描述物体可见的表面外观。
 * 该图片可以有Alpha透明通道。
@@ -109,7 +109,7 @@ jME环境(Context)为JME3游戏提供了所需的一切，包括：配置管理�
 * 用法线贴图(Normal Map)为细微之处塑模，比如墙壁裂纹、锈迹、皮肤纹理，或者帆布的编织纹理。([更多关于凸凹贴图](http://en.wikipedia.org/wiki/bump_mapping))
 * 用高度图(Height Map)为打过莫地形塑模，包括深谷和山脉。
 
-![mountains512.png](content/images/2016/08/mountains512.png)
+![mountains512.png](/content/images/2016/08/mountains512.png)
 
 ###### 高度图
 
@@ -119,7 +119,7 @@ jME环境(Context)为JME3游戏提供了所需的一切，包括：配置管理�
 
 ###### 法线贴图
 
-![tank_normals.png](content/images/2016/08/tank_normals.png)
+![tank_normals.png](/content/images/2016/08/tank_normals.png)
 
 * 做得好的法线贴图会让物体轮廓显得更精致——勿需再浪费精力给网格增加多边形。法线贴图里包含细微变化信息，让物体看起来更光滑，纹理更细密。
 
@@ -129,7 +129,7 @@ jME环境(Context)为JME3游戏提供了所需的一切，包括：配置管理�
 
 ##### 高光贴图(Specular Map)
 
-![tank_specular.jpg](content/images/2016/08/tank_specular.jpg)
+![tank_specular.jpg](/content/images/2016/08/tank_specular.jpg)
 
 * 高光贴图可以进一步改善物体表面真实感：它包含亮度的额外信息，使物体光照效果看起来更加逼真。
 
@@ -139,7 +139,7 @@ jME环境(Context)为JME3游戏提供了所需的一切，包括：配置管理�
 
 #### 无缝拼接纹理
 
-![BrickWall.jpg](content/images/2016/08/BrickWall.jpg)
+![BrickWall.jpg](/content/images/2016/08/BrickWall.jpg)
 
 拼接纹理(Tiles)是一种简单常用的纹理类型。为一大片区域(如墙壁、地板)构造纹理的时候，不需要做大幅的纹理图片，而是做一小片纹理然后不断拼接直到填满整个区域。
 
@@ -149,7 +149,7 @@ jME环境(Context)为JME3游戏提供了所需的一切，包括：配置管理�
 
 #### UV贴图 / 纹理贴图集
 
-![Car.jpg](content/images/2016/08/Car.jpg)
+![Car.jpg](/content/images/2016/08/Car.jpg)
 
 给立方体形状贴纹理容易——但是如果是角色，有面部和肢体，怎么办呢？对形状更复杂的物体，其纹理设计参照平面缝纫模式：即一个图形文件里包含物体前面、后面和侧面轮廓信息，一个接着一个。将指定的平面纹理区域(UV坐标表示)贴到3D模型(XYZ坐标表示)的指定区域，称为UV映射。使用UV映射(也叫纹理图集)的方法，一个模型的每个面都可以有不同的纹理。你可以为每种纹理建立一个相关UV映射。
 
@@ -157,7 +157,7 @@ jME环境(Context)为JME3游戏提供了所需的一切，包括：配置管理�
 
 #### 环境映像
 
-![glass-teapot1.png](content/images/2016/08/glass-teapot1.png)
+![glass-teapot1.png](/content/images/2016/08/glass-teapot1.png)
 
 环境映像，或者说反射映像，用来模拟实时反射和折射效果。这种方法比离线渲染程序中使用的射线追踪方法速度快，但是精确度低。
 
@@ -175,7 +175,7 @@ MIP是拉丁文 "multum in parvo"，英文Many in one，意为多对一。
 
 程序纹理的制作方法是不断重复一个小图片，外加一些伪随机和梯度变化(称作Perlin噪声)。程序纹理比静态矩形纹理看起来更自然，球面失真度小。对大型网格物体，这种重复纹理看起来比无缝凭借纹理更自然。程序纹理若用于不规则大面积结构物体，效果更为立项，比如草地，土壤，石块，锈迹，还有围墙。可用jMonkeyEngine的 [Neo Texture插件](http://wiki.jmonkeyengine.org/sdk/neotexture.html) 来制作程序纹理。
 
-![neotexture-2.jpg](content/images/2016/08/neotexture-2.jpg)
+![neotexture-2.jpg](/content/images/2016/08/neotexture-2.jpg)
 
 还可以参见：[用Blender创建材质](http://www.blender.org/education-help/tutorials/materials/), [Blender: 人类已知的各种材质](http://en.wikibooks.org/wiki/Blender_3D:_Noob_to_Pro/Every_Material_Known_to_Man)
 
@@ -187,7 +187,7 @@ MIP是拉丁文 "multum in parvo"，英文Many in one，意为多对一。
 
 #### 装配和蒙皮
 
-![blenderswordsman.png](content/images/2016/08/blenderswordsman.png)
+![blenderswordsman.png](/content/images/2016/08/blenderswordsman.png)
 
 动画角色是有支架的：内里的骨骼(骨头)和外部表面(皮肤)。皮肤是角色的可见外表，此处所谓的皮肤也包括衣服。骨头肉眼不可见，它用来对皮肤的图像渐变做插值(计算)。
 
@@ -254,7 +254,7 @@ JME3游戏引擎只能加载、显示录制好的动画，因此，你必须使�
 
 ### 数学
 
-![笛卡尔坐标系](content/images/2016/08/coordinate-system.png)
+![笛卡尔坐标系](/content/images/2016/08/coordinate-system.png)
 
 #### 坐标
 
@@ -296,7 +296,7 @@ JME3游戏引擎只能加载、显示录制好的动画，因此，你必须使�
 
 ##### 表面法线
 
-![300px-surface_normal.png](content/images/2016/08/300px-surface_normal.png)
+![300px-surface_normal.png](/content/images/2016/08/300px-surface_normal.png)
 
 表面法线就是垂直于(正交于)某平面的向量。要计算表面法线，可以做叉乘(向量积)运算。
 
