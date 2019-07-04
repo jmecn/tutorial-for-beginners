@@ -28,11 +28,11 @@
 
 水下
 
-![水下](content/images/2017/06/under_water.png)
+![水下](/content/images/2017/06/under_water.png)
 
 雾化
 
-![雾化](content/images/2017/06/fog.png)
+![雾化](/content/images/2017/06/fog.png)
 
 ### 滤镜的用法
 
@@ -56,7 +56,7 @@ Maven
 
 jME3 SDK
 
-![](content/images/2017/06/lib.png)
+![](/content/images/2017/06/lib.png)
 
 #### 使用方法
 
@@ -312,9 +312,9 @@ jME3 SDK
 
 效果对比如下：
 
-![](content/images/2017/06/no_fog.png)
+![](/content/images/2017/06/no_fog.png)
 
-![](content/images/2017/06/with_fog.png)
+![](/content/images/2017/06/with_fog.png)
 
 ### 实例：多滤镜
 
@@ -657,7 +657,7 @@ jME3 SDK
 
 结果，就是我们在本章开头看到的画面。
 
-![](content/images/2017/06/depth_of_field.png)
+![](/content/images/2017/06/depth_of_field.png)
 
 ### 自定义滤镜
 
@@ -779,7 +779,7 @@ Materials/GrayScale/GrayScale.j3md
 把 GrayScaleFilter 对象加到 FilterPostProcessor 中即可。
 效果如下：
 
-![](content/images/2017/06/gray_scale.png)
+![](/content/images/2017/06/gray_scale.png)
 
 ## 场景处理器
 
@@ -847,7 +847,7 @@ SceneProcessor 的背后也是着色器（Shader），你可以根据自己的�
 
 这类场景元素很难通过建模来实现，想要制作模型动画几乎是不可能的。在3D游戏中，我们使用粒子系统来模拟其它传统的渲染技术难以实现的抽象视觉效果。
 
-![](content/images/2017/06/ParticleFire.png)
+![](/content/images/2017/06/ParticleFire.png)
 
 ### 相关概念
 
@@ -930,7 +930,7 @@ jME3粒子为点状或片状，通过设置不同的材质和纹理，可以改�
 
 例如，“爆炸”的粒子特效是由闪光、火云、烟尘、碎片、冲击波等多种粒子组合而成的，通常还会伴随着瞬间的强光。
 
-![](content/images/2017/06/explosion.jpg)
+![](/content/images/2017/06/explosion.jpg)
 
 创建一个发生器非常简单，构造参数为：发生器名称、粒子形状、粒子总数。
 
@@ -966,13 +966,13 @@ jME3粒子为点状或片状，通过设置不同的材质和纹理，可以改�
 
 点状很好理解，面状则是由2个三角形拼成的方形，大概是这个样子。
 
-![](content/images/2017/06/type_triangle.png)
+![](/content/images/2017/06/type_triangle.png)
 
 #### 设置粒子的材质
 
 粒子发射器有专用的材质 `Common/MatDefs/Misc/Particle.j3md`。使用不同的纹理贴图，可以让粒子呈现出不同的外形。你可以自己创建所需要的粒子贴图，从而获得碎石、烟雾、水滴、雪花等不同的粒子特效。
 
-![flash](content/images/2017/06/flash.png)
+![flash](/content/images/2017/06/flash.png)
 
 上图是我们接下来要是用的“闪光”特效贴图，这个图片可以在 [jme3-testdata](https://github.com/jMonkeyEngine/jmonkeyengine/tree/master/jme3-testdata/src/main/resources/Effects/Explosion) 中找到。
 
@@ -1200,13 +1200,13 @@ jME3粒子为点状或片状，通过设置不同的材质和纹理，可以改�
 
 运行结果如下：
 
-![](content/images/2017/06/ParticleFire.png)
+![](/content/images/2017/06/ParticleFire.png)
 
 ### t0neg0d粒子发射器
 
 [t0neg0d](https://hub.jmonkeyengine.org/u/t0neg0d/summary)是曾经活跃于jME社区的一名开发者，主要活动时间是2011年到2015年。
 
-![](content/images/2017/06/t0neg0d.png)
+![](/content/images/2017/06/t0neg0d.png)
 
 t0neg0d是一位相当富有创造力的图形工程师，在她活跃的这段时间，她持续推出了很多具有非常意义的jME3插件。不仅非常实用，而且效果炫酷。
 
@@ -1220,14 +1220,14 @@ t0neg0d就是怎么一个人，她觉得jME3自带的粒子系统不够酷炫，
 3. SkyControl 炫丽的天穹
 这个组件更是帅到没朋友。多层天球，多层云层，昼夜更替，光照变化，经纬度变化。。[SkyControl](https://github.com/jMonkeyEngine-Contributions/SkyControl) 基于着色器实现，在获得 t0neg0d 本人同意后，被Stephen Gold移植到他的[jme3-utilities](https://github.com/stephengold/jme3-utilities)项目中。
 
-![](https://github.com/jmecn/tonegodemitter/raw/master/screenshots/fire.jpg)
+![](/content/images/2017/06/t0neg0d_fire.jpg)
 
-![](https://github.com/jmecn/tonegodemitter/raw/master/screenshots/ice.jpg)
+![](/content/images/2017/06/t0neg0d_ice.jpg)
 
-![](https://github.com/jmecn/tonegodemitter/raw/master/screenshots/spark.png)
+![](/content/images/2017/06/t0neg0d_spark.png)
 
-![](content/images/2017/06/Sky.png)
-![](content/images/2017/06/Sky2.png)
+![](/content/images/2017/06/Sky.png)
+![](/content/images/2017/06/Sky2.png)
 
 ## 性能问题
 
@@ -1239,8 +1239,8 @@ t0neg0d就是怎么一个人，她觉得jME3自带的粒子系统不够酷炫，
 
 我先不解释这个复杂的术语是什么意思，请看下面两张图。这两张图分别是关闭、开启SSAO时的效果，请注意画面效果和刷新率（FPS）的区别。
 
-![](content/images/2017/06/No_AO.png)
-![](content/images/2017/06/SSAO.png)
+![](/content/images/2017/06/No_AO.png)
+![](/content/images/2017/06/SSAO.png)
 
 在现实生活中，物体表面的光并不仅仅来自光源，还包括从很多其他物体表面多次反射的环境光。与直接光源相比，这些环境光称为间接光。当光线在房间中传播和反射时，有一些地方是不容易被照到的：角落、缝隙、褶皱等等。这导致了这些区域看起来比它们周围要暗一些。
 
