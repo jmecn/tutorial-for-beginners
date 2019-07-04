@@ -1220,11 +1220,11 @@ t0neg0d就是怎么一个人，她觉得jME3自带的粒子系统不够酷炫，
 3. SkyControl 炫丽的天穹
 这个组件更是帅到没朋友。多层天球，多层云层，昼夜更替，光照变化，经纬度变化。。[SkyControl](https://github.com/jMonkeyEngine-Contributions/SkyControl) 基于着色器实现，在获得 t0neg0d 本人同意后，被Stephen Gold移植到他的[jme3-utilities](https://github.com/stephengold/jme3-utilities)项目中。
 
-![](/content/images/2017/06/t0neg0d_fire.jpg)
+![t0neg0d_fire.jpg](/content/images/2017/06/t0neg0d_fire.jpg)
 
-![](/content/images/2017/06/t0neg0d_ice.jpg)
+![t0neg0d_ice.jpg](/content/images/2017/06/t0neg0d_ice.jpg)
 
-![](/content/images/2017/06/t0neg0d_spark.png)
+![t0neg0d_spark.png](/content/images/2017/06/t0neg0d_spark.png)
 
 ![](/content/images/2017/06/Sky.png)
 ![](/content/images/2017/06/Sky2.png)
