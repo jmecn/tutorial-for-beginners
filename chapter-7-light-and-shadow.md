@@ -14,7 +14,7 @@
 
 ![阴影](/content/images/2017/04/Shadow.png)
 
-上图源代码：[HelloLight](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/HelloLight.java)
+上图源代码：[HelloLight](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/HelloLight.java)
 
 影子的效果越清晰、越柔和，对性能的消耗越大。引擎的性能和显卡的性能直接挂钩，开发游戏时需要考虑用户的不同的硬件性能，适当调整画面效果。
 
@@ -224,7 +224,7 @@ jME3中很多的特效滤镜都是通过`FilterPostProcessor`来工作的。`Fil
 
 ## 光与材质
 
-本节源代码：[HelloMaterial](https://github.com/jmecn/jME3Tutorials/blob/master/jME3Tutorials/src/main/java/net/jmecn/HelloMaterial.java)
+本节源代码：[HelloMaterial](https://github.com/jmecn/jME3Tutorials/blob/master/src/main/java/net/jmecn/HelloMaterial.java)
 
 ### 无光 VS 有光
 Unshaded材质不需要光照，而Lighting材质必须得有光源才能看见。例如我们注释掉`simpleInitApp`中的`addLight()`方法，再次运行程序就会发现，使用Lighting材质的物体变成了深渊的颜色。另外，由于场景中不需要计算光照，FPS将会有显著提升。
