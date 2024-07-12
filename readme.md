@@ -26,6 +26,12 @@ jME3官方网站：
 
 [本教程设计大纲](about-this-tutorial.md)
 
+其它资料：
+
+* JhonKkk 的 《JMonkeyEngine3教程系列》 https://www.cnblogs.com/JhonKkk/articles/18299479
+* JhonKkk 的 《JMonkeyEngine3.x中材质的多PASS》 https://www.jianshu.com/p/ec6484990fab
+* Bob 编写的JMonkeyEngine教程，以及他翻译的 Zay-ES案例  https://www.jianshu.com/u/9395d9b63eac
+
 ## 前言
 [前言：我想做游戏](preface-i-want-to-make-game.md)
 
