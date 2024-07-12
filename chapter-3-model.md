@@ -41,7 +41,7 @@
 
 **素材网站/商店**
 
- * http://opengamearg.org/
+ * http://opengameart.org/
  * http://tf3dm.com/
  * https://sketchfab.com/
  * http://www.cadnav.com/
